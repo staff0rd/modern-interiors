@@ -54,3 +54,5 @@ run:
       - ./src
       - --threshold
       - "60"
+commit:
+  push: true
