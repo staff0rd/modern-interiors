@@ -14,6 +14,10 @@
         "accessibility": "no-public"
       }
     ],
-    "prefer-template": "error"
+    "prefer-template": "error",
+    // Temporarily disabled: its member-syntax order conflicts with the editor's
+    // `source.organizeImports.oxc`, and the rule's --fix is unreliable (oxc-project/oxc#13316),
+    // so leaving it on makes `assist verify` fail on import order. Tracked in assist backlog #444.
+    "sort-imports": "off"
   }
 }
