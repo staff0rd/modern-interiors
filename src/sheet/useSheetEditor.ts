@@ -1,27 +1,16 @@
 import { useState } from "react";
 
-import { subSpriteSchema, type ManifestEntry, type SubSprite } from "../metadata/schema.ts";
+import type { ManifestEntry, SubSprite } from "../metadata/schema.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
+import { makeSheetHandlers, type SheetHandlers } from "./sheetHandlers.ts";
+import { useParamSelection } from "./useParamSelection.ts";
 
-const NONE = -1;
-const FIRST = 0;
-const ORIGIN = 0;
-const DEFAULT_RECT = 32;
+const SUB_PARAM = "sub";
 const MAX_DISPLAY = 640;
 const MIN_SCALE = 1;
 const MAX_UPSCALE = 6;
 
 export type Rect = SubSprite["rect"];
-
-type SheetHandlers = {
-  add: () => void;
-  draw: (rect: Rect) => void;
-  remove: (index: number) => void;
-  select: (index: number) => void;
-  setName: (index: number, name: string) => void;
-  setDescription: (index: number, description: string) => void;
-  setRect: (index: number, rect: Rect) => void;
-};
 
 export type SheetEditorState = {
   entry: ManifestEntry | undefined;
@@ -43,66 +32,25 @@ const displayScale = (entry: ManifestEntry | undefined): number => {
   return Math.min(MAX_UPSCALE, Math.max(MIN_SCALE, Math.floor(MAX_DISPLAY / longest)));
 };
 
-const describe = (description: string): string | undefined => {
-  if (description.trim().length > FIRST) {
-    return description;
-  }
-  return undefined;
-};
-
-const defaultRect = (entry: ManifestEntry | undefined): Rect => ({
-  height: Math.min(entry?.frameHeight ?? DEFAULT_RECT, entry?.height ?? DEFAULT_RECT),
-  left: ORIGIN,
-  top: ORIGIN,
-  width: Math.min(entry?.frameWidth ?? DEFAULT_RECT, entry?.width ?? DEFAULT_RECT),
-});
-
 export const useSheetEditor = (store: MetadataStore, path: string): SheetEditorState => {
-  const { manifest, metadata, setSubSprites: persistSubSprites } = store;
+  const { manifest, metadata, setSubSprites: persist } = store;
   const entry = manifest?.entries.find((candidate) => candidate.path === path);
   const existing = metadata?.assets[path]?.subSprites;
   const [subSprites, setSubSprites] = useState<SubSprite[]>(() => existing ?? []);
-  const [selectedIndex, setSelectedIndex] = useState(NONE);
+  const [selectedIndex, setSelectedIndex] = useParamSelection(SUB_PARAM, subSprites.length);
 
-  const commit = (next: SubSprite[]) => {
-    setSubSprites(next);
-    persistSubSprites(
-      path,
-      next.filter((subSprite) => subSpriteSchema.safeParse(subSprite).success),
-    );
-  };
-
-  const append = (rect: Rect) => {
-    const index = subSprites.length;
-    commit([...subSprites, { name: "", rect }]);
-    setSelectedIndex(index);
-  };
-
-  const updateAt = (index: number, patch: Partial<SubSprite>) =>
-    commit(
-      subSprites.map((subSprite, at) => {
-        if (at === index) {
-          return { ...subSprite, ...patch };
-        }
-        return subSprite;
-      }),
-    );
+  const handlers = makeSheetHandlers({
+    entry,
+    persist: (next) => persist(path, next),
+    selectedIndex,
+    setSelectedIndex,
+    setSubSprites,
+    subSprites,
+  });
 
   return {
     entry,
-    handlers: {
-      add: () => append(defaultRect(entry)),
-      draw: (rect) => append(rect),
-      remove: (index) => {
-        commit(subSprites.filter((_unused, at) => at !== index));
-        setSelectedIndex(NONE);
-      },
-      select: setSelectedIndex,
-      setDescription: (index, description) =>
-        updateAt(index, { description: describe(description) }),
-      setName: (index, name) => updateAt(index, { name }),
-      setRect: (index, rect) => updateAt(index, { rect }),
-    },
+    handlers,
     scale: displayScale(entry),
     selectedIndex,
     subSprites,

@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { EditorHeader } from "../anim/EditorHeader.tsx";
 import { editorStyles } from "../anim/editorStyles.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
@@ -8,6 +6,8 @@ import { snapRect } from "./groupCells.ts";
 import { SheetCanvas } from "./SheetCanvas.tsx";
 import { SheetPanel, type SheetMode } from "./SheetPanel.tsx";
 import { sheetStyles } from "./sheetStyles.ts";
+import { SubSpriteDetailPanel } from "./SubSpriteDetailPanel.tsx";
+import { useSheetMode } from "./useSheetMode.ts";
 import { useSheetEditor, type Rect, type SheetEditorState } from "./useSheetEditor.ts";
 import { useSheetGroups, type SheetGroupsState } from "./useSheetGroups.ts";
 
@@ -42,7 +42,7 @@ const snapFor = (mode: SheetMode, groupState: SheetGroupsState) => {
 export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorProps) => {
   const view = useSheetEditor(store, path);
   const groupState = useSheetGroups(store, path, view.entry);
-  const [mode, setMode] = useState<SheetMode>("group");
+  const [mode, setMode] = useSheetMode();
   if (!view.entry) {
     return <div style={{ ...editorStyles.page, padding: 20 }}>Asset not found in manifest.</div>;
   }
@@ -72,6 +72,7 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
           />
         </div>
         <GroupDetailPanel mode={mode} view={view} groupState={groupState} />
+        <SubSpriteDetailPanel mode={mode} view={view} />
         <SheetPanel
           mode={mode}
           onMode={setMode}

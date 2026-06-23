@@ -44,7 +44,9 @@ export const SheetPanel = ({ mode, onMode, view, groupState, saveState }: SheetP
     </div>
     <p style={sheetStyles.hint}>{modeHint(mode)}</p>
     {mode === "group" && <GroupPanel groupState={groupState} />}
-    {mode === "sub" && <SubPanel view={view} />}
+    {mode === "sub" && (
+      <SubPanel view={view} groupRects={groupState.groups.map((group) => group.rect)} />
+    )}
     <span style={{ color: "#8a8d9b", fontSize: 12 }}>{SAVE_LABELS[saveState]}</span>
   </div>
 );

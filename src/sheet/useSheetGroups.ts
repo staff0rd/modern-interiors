@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 
 import {
   subSpriteGroupSchema,
@@ -10,39 +9,10 @@ import {
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { defaultCellSize } from "./groupCells.ts";
 import { makeGroupHandlers, type GroupHandlers } from "./groupHandlers.ts";
+import { useParamSelection } from "./useParamSelection.ts";
 
-const NONE = -1;
-const FIRST = 0;
 const ZERO = 0;
 const GROUP_PARAM = "group";
-const DESELECTED = "none";
-
-const initialSelection = (count: number): number => {
-  if (count > ZERO) {
-    return FIRST;
-  }
-  return NONE;
-};
-
-const resolveSelection = (param: string | null, count: number): number => {
-  if (param === DESELECTED) {
-    return NONE;
-  }
-  if (param !== null) {
-    const parsed = Number(param);
-    if (Number.isInteger(parsed) && parsed >= ZERO && parsed < count) {
-      return parsed;
-    }
-  }
-  return initialSelection(count);
-};
-
-const paramValue = (index: number): string => {
-  if (index === NONE) {
-    return DESELECTED;
-  }
-  return String(index);
-};
 
 export type SheetGroupsState = {
   groups: SubSpriteGroup[];
@@ -73,18 +43,7 @@ export const useSheetGroups = (
     () => asset?.groupTemplate ?? defaultTemplate(entry),
   );
   const [showGrid, setShowGrid] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const selectedIndex = resolveSelection(searchParams.get(GROUP_PARAM), groups.length);
-  const setSelectedIndex = (index: number) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.set(GROUP_PARAM, paramValue(index));
-        return next;
-      },
-      { replace: true },
-    );
-  };
+  const [selectedIndex, setSelectedIndex] = useParamSelection(GROUP_PARAM, groups.length);
 
   const handlers = makeGroupHandlers({
     groups,

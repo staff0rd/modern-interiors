@@ -1,6 +1,7 @@
 import { KIND_VALUES } from "../metadata/schema.ts";
 import type { SaveState } from "../metadata/useMetadata.ts";
 import { chipStyle, styles } from "./browseStyles.ts";
+import { ItchioLink } from "./ItchioLink.tsx";
 import type { KindFilter, KindSummary } from "./rows.ts";
 
 const SAVE_LABEL: Record<SaveState, string> = {
@@ -39,5 +40,6 @@ export const KindChips = ({ total, summary, kindFilter, saveState, onSelect }: K
     })}
     <span style={{ flex: 1 }} />
     <span style={{ color: "#8a8d9b", minWidth: 60 }}>{SAVE_LABEL[saveState]}</span>
+    <ItchioLink />
   </div>
 );

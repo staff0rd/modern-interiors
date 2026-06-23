@@ -1,13 +1,15 @@
+import { AutoDetectControls } from "./AutoDetectControls.tsx";
 import { SubSpriteForm } from "./SubSpriteForm.tsx";
 import { SubSpriteList } from "./SubSpriteList.tsx";
-import type { SheetEditorState } from "./useSheetEditor.ts";
+import type { Rect, SheetEditorState } from "./useSheetEditor.ts";
 
 type SubPanelProps = {
   view: SheetEditorState;
+  groupRects: Rect[];
 };
 
-export const SubPanel = ({ view }: SubPanelProps) => {
-  const { subSprites, selectedIndex, handlers } = view;
+export const SubPanel = ({ view, groupRects }: SubPanelProps) => {
+  const { subSprites, selectedIndex, handlers, entry, url } = view;
   const selected = subSprites[selectedIndex];
   return (
     <>
@@ -17,6 +19,13 @@ export const SubPanel = ({ view }: SubPanelProps) => {
         onSelect={handlers.select}
         onAdd={handlers.add}
         onRemove={handlers.remove}
+      />
+      <AutoDetectControls
+        url={url}
+        frameWidth={entry?.frameWidth ?? null}
+        frameHeight={entry?.frameHeight ?? null}
+        groupRects={groupRects}
+        onDetect={handlers.autoDetect}
       />
       {selected && (
         <SubSpriteForm
