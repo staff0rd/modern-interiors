@@ -35,6 +35,7 @@ const rectSchema = z.object({
   top: z.number().int().nonnegative(),
   width: z.number().int().positive(),
 });
+export type Rect = z.infer<typeof rectSchema>;
 
 export const animationSchema = z.object({
   excludedFrames: z.array(z.number().int().nonnegative()).optional(),

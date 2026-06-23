@@ -1,0 +1,76 @@
+{
+  "frames": {
+    "animated_spider/f0": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "animated_spider/f1": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 32,
+        "y": 0
+      }
+    },
+    "animated_spider/f2": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 64,
+        "y": 0
+      }
+    },
+    "animated_spider/f3": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 96,
+        "y": 0
+      }
+    },
+    "animated_spider/f4": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 128,
+        "y": 0
+      }
+    },
+    "animated_spider/f5": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 160,
+        "y": 0
+      }
+    },
+    "animated_spider/f6": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 192,
+        "y": 0
+      }
+    },
+    "animated_spider/f7": {
+      "frame": {
+        "h": 64,
+        "w": 32,
+        "x": 224,
+        "y": 0
+      }
+    }
+  },
+  "meta": {
+    "image": "/moderninteriors-win/3_Animated_objects/32x32/spritesheets/animated_spider_32x32.png",
+    "scale": "1",
+    "size": {
+      "h": 64,
+      "w": 256
+    }
+  }
+}

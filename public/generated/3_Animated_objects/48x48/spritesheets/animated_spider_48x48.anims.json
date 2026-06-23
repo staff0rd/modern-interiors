@@ -1,0 +1,46 @@
+{
+  "anims": [
+    {
+      "frameRate": 8,
+      "frames": [
+        {
+          "frame": "spider/f0",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f1",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f2",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f3",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f4",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f5",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f6",
+          "key": "animated_spider_48x48"
+        },
+        {
+          "frame": "spider/f7",
+          "key": "animated_spider_48x48"
+        }
+      ],
+      "key": "spider",
+      "repeat": -1,
+      "type": "frame",
+      "yoyo": false
+    }
+  ],
+  "globalTimeScale": 1
+}

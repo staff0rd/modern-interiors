@@ -23,6 +23,20 @@ const renderEditor = (store: MetadataStore, path: string, onClose: () => void): 
 const EditorRoute = ({ store }: { store: MetadataStore }): ReactNode => {
   const path = useParams()["*"] ?? "";
   const navigate = useNavigate();
+  if (store.status === "loading") {
+    return (
+      <div style={{ color: "#e8e8ef", font: "14px system-ui, sans-serif", padding: 20 }}>
+        Loading…
+      </div>
+    );
+  }
+  if (store.status === "error" || !store.manifest || !store.metadata) {
+    return (
+      <div style={{ color: "#e8e8ef", font: "14px system-ui, sans-serif", padding: 20 }}>
+        Error: {store.error ?? "metadata unavailable"}
+      </div>
+    );
+  }
   return renderEditor(store, path, () => navigate("/"));
 };
 

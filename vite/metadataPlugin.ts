@@ -5,6 +5,7 @@ import type { Plugin } from "vite";
 
 import { errorMessage } from "../src/metadata/errorMessage.ts";
 import { emptyMetadata, metadataSchema } from "../src/metadata/schema.ts";
+import { GENERATED_DIR, writeGeneratedTree } from "./generateOutput.ts";
 
 const METADATA_FILE = join(process.cwd(), "metadata", "metadata.json");
 const MANIFEST_FILE = join(process.cwd(), "metadata", "manifest.json");
@@ -54,14 +55,17 @@ const putMetadata = async (req: Requester, res: Responder) => {
   try {
     const parsed = metadataSchema.parse(JSON.parse(await readBody(req)));
     await writeFile(METADATA_FILE, `${JSON.stringify(parsed, null, JSON_INDENT)}\n`);
-    sendJson(res, HTTP_OK, { ok: true });
+    const generated = await writeGeneratedTree();
+    sendJson(res, HTTP_OK, { generated, ok: true });
   } catch (error) {
-    sendJson(res, HTTP_BAD_REQUEST, { error: errorMessage(error, "invalid metadata") });
+    sendJson(res, HTTP_BAD_REQUEST, { error: errorMessage(error, "save or generate failed") });
   }
 };
 
 export const metadataPlugin = (): Plugin => ({
-  config: () => ({ server: { watch: { ignored: [METADATA_FILE] } } }),
+  config: () => ({
+    server: { watch: { ignored: [METADATA_FILE, GENERATED_DIR, `${GENERATED_DIR}/**`] } },
+  }),
   configureServer(server) {
     server.middlewares.use("/api/manifest", (_req, res) =>
       serveFile(res, MANIFEST_FILE, () =>

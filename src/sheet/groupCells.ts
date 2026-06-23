@@ -1,5 +1,4 @@
-import type { ManifestEntry, SubSpriteGroup } from "../metadata/schema.ts";
-import type { Rect } from "./useSheetEditor.ts";
+import type { ManifestEntry, Rect, SubSpriteGroup } from "../metadata/schema.ts";
 
 const ONE = 1;
 const ZERO = 0;
