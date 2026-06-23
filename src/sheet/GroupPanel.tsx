@@ -1,7 +1,10 @@
+import { sheetStyles } from "./sheetStyles.ts";
 import { GroupList } from "./GroupList.tsx";
 import { GroupTemplateForm } from "./GroupTemplateForm.tsx";
 import { SubSpriteGroupForm } from "./SubSpriteGroupForm.tsx";
 import type { SheetGroupsState } from "./useSheetGroups.ts";
+
+const EMPTY = 0;
 
 type GroupPanelProps = {
   groupState: SheetGroupsState;
@@ -13,12 +16,18 @@ export const GroupPanel = ({ groupState }: GroupPanelProps) => {
   return (
     <>
       <GroupTemplateForm template={template} onChange={setTemplate} />
+      {groups.length > EMPTY && (
+        <button type="button" style={sheetStyles.addButton} onClick={handlers.applyTemplateAll}>
+          Reset all {groups.length} groups from template
+        </button>
+      )}
       <GroupList
         groups={groups}
         selectedIndex={selectedIndex}
         onSelect={handlers.select}
         onAdd={handlers.add}
         onRemove={handlers.remove}
+        onTile={handlers.tile}
       />
       {selected && (
         <SubSpriteGroupForm

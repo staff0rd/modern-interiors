@@ -34,7 +34,7 @@ export const chipStyle = (
     style.opacity = EXCLUDED_OPACITY;
   }
   if (selected) {
-    style.borderColor = "#5b8cff";
+    style.border = "1px solid #5b8cff";
   }
   if (dropTarget) {
     style.boxShadow = "inset 3px 0 0 #7ee29b";

@@ -29,18 +29,39 @@ export const sheetStyles = {
     position: "absolute",
   },
   cellLabel: {
+    background: "#101116cc",
+    borderRadius: 2,
     color: "#d6fff0",
     fontSize: 8,
-    left: 1,
-    lineHeight: 1.2,
+    left: 0,
+    lineHeight: 1.3,
     maxWidth: "100%",
     overflow: "hidden",
+    padding: "0 2px",
     position: "absolute",
     textOverflow: "ellipsis",
-    textShadow: "0 0 2px #000, 0 0 2px #000",
     top: 0,
     whiteSpace: "nowrap",
   },
+  detailArea: {
+    background: "#0d0e12",
+    borderLeft: "1px solid #2a2c36",
+    display: "flex",
+    flexDirection: "column",
+    flexShrink: 0,
+    gap: 8,
+    overflow: "auto",
+    padding: 16,
+  },
+  detailFrame: {
+    border: "1px solid #2a2c36",
+    flexShrink: 0,
+    lineHeight: 0,
+    overflow: "hidden",
+    position: "relative",
+  },
+  detailHeader: { alignItems: "center", display: "flex", gap: 8, justifyContent: "space-between" },
+  detailImage: { imageRendering: "pixelated", maxWidth: "none", position: "absolute" },
   drawPreview: {
     background: "#5b8cff22",
     border: "1px dashed #5b8cff",
@@ -72,6 +93,7 @@ export const sheetStyles = {
   groupSelected: { border: "2px solid #5b8cff", zIndex: 2 },
   hint: { color: "#8a8d9b", fontSize: 12, padding: "0 0 8px" },
   image: { display: "block", imageRendering: "pixelated" },
+  inactive: { opacity: 0.3, pointerEvents: "none" },
   overlay: { cursor: "crosshair", inset: 0, position: "absolute" },
   panel: {
     borderLeft: "1px solid #2a2c36",
@@ -126,8 +148,24 @@ export const sheetStyles = {
     justifyContent: "space-between",
     padding: "6px 10px",
   },
-  rowActive: { borderColor: "#5b8cff" },
-  rowName: { fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  rowAction: {
+    background: "#1d1f27",
+    border: "1px solid #3a3d4a",
+    borderRadius: 6,
+    color: "#cfd2dc",
+    cursor: "pointer",
+    flexShrink: 0,
+    fontSize: 11,
+    padding: "3px 8px",
+  },
+  rowActive: { border: "1px solid #5b8cff" },
+  rowName: {
+    flex: 1,
+    fontSize: 13,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   rowSummary: { color: "#8a8d9b", flexShrink: 0, fontSize: 11 },
   textarea: {
     background: "#1d1f27",
@@ -139,3 +177,10 @@ export const sheetStyles = {
     resize: "vertical",
   },
 } satisfies Record<string, CSSProperties>;
+
+export const inactiveStyle = (interactive: boolean): CSSProperties => {
+  if (interactive) {
+    return {};
+  }
+  return sheetStyles.inactive;
+};

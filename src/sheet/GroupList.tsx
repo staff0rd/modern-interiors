@@ -17,9 +17,19 @@ type GroupListProps = {
   onSelect: (index: number) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
+  onTile: (index: number) => void;
 };
 
-export const GroupList = ({ groups, selectedIndex, onSelect, onAdd, onRemove }: GroupListProps) => (
+const stop = (event: { stopPropagation: () => void }) => event.stopPropagation();
+
+export const GroupList = ({
+  groups,
+  selectedIndex,
+  onSelect,
+  onAdd,
+  onRemove,
+  onTile,
+}: GroupListProps) => (
   <>
     <button type="button" style={sheetStyles.addButton} onClick={onAdd}>
       ＋ Add group
@@ -31,9 +41,20 @@ export const GroupList = ({ groups, selectedIndex, onSelect, onAdd, onRemove }: 
         <span style={sheetStyles.rowSummary}>{cellCount(group)} cells</span>
         <button
           type="button"
+          style={sheetStyles.rowAction}
+          title="Tile this block across the whole sheet"
+          onClick={(event) => {
+            stop(event);
+            onTile(index);
+          }}
+        >
+          ⧉ Tile
+        </button>
+        <button
+          type="button"
           style={sheetStyles.removeButton}
           onClick={(event) => {
-            event.stopPropagation();
+            stop(event);
             onRemove(index);
           }}
         >

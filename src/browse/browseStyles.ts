@@ -28,7 +28,7 @@ export const styles = {
     cursor: "pointer",
     padding: "4px 10px",
   },
-  chipActive: { background: "#243049", borderColor: "#5b8cff" },
+  chipActive: { background: "#243049", border: "1px solid #5b8cff" },
   input: {
     background: "#1d1f27",
     border: "1px solid #2a2c36",

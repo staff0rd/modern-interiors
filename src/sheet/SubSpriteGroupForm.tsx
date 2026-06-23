@@ -25,6 +25,11 @@ export const SubSpriteGroupForm = ({
   const { cols, rows } = gridDims(group);
   return (
     <>
+      <p style={sheetStyles.hint}>
+        Group name is the style/recolour (e.g. yellow_floor). Each cell&apos;s variant name below is
+        shared across groups; the final sprite name is group/variant. Use “⧉ Tile” on a group above
+        to replicate its block across the whole sheet.
+      </p>
       <label style={editorStyles.field}>
         Style name
         <input

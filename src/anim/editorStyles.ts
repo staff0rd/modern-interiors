@@ -140,7 +140,7 @@ export const tabBarStyles = {
     gap: 8,
     padding: "4px 10px",
   },
-  tabActive: { background: "#243049", borderColor: "#5b8cff", color: "#e8e8ef" },
+  tabActive: { background: "#243049", border: "1px solid #5b8cff", color: "#e8e8ef" },
 } satisfies Record<string, CSSProperties>;
 
 const buttonBase: CSSProperties = {

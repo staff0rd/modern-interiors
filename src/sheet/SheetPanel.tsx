@@ -10,9 +10,16 @@ import type { SheetGroupsState } from "./useSheetGroups.ts";
 
 export type SheetMode = "group" | "sub";
 
+const modeHint = (mode: SheetMode): string => {
+  if (mode === "group") {
+    return "Groups: a repeating block of cells (e.g. a 2×3 floor style) you can Tile across the sheet.";
+  }
+  return "Sub-sprites: individual named rectangles. The dimmed orange rects are sub-sprites.";
+};
+
 const tabStyle = (active: boolean): CSSProperties => {
   if (active) {
-    return { ...sheetStyles.addButton, borderColor: "#5b8cff", borderStyle: "solid", flex: 1 };
+    return { ...sheetStyles.addButton, border: "1px solid #5b8cff", flex: 1 };
   }
   return { ...sheetStyles.addButton, flex: 1 };
 };
@@ -35,6 +42,7 @@ export const SheetPanel = ({ mode, onMode, view, groupState, saveState }: SheetP
         Sub-sprites
       </button>
     </div>
+    <p style={sheetStyles.hint}>{modeHint(mode)}</p>
     {mode === "group" && <GroupPanel groupState={groupState} />}
     {mode === "sub" && <SubPanel view={view} />}
     <span style={{ color: "#8a8d9b", fontSize: 12 }}>{SAVE_LABELS[saveState]}</span>

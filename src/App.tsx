@@ -1,4 +1,5 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
+import { Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { AnimationEditor } from "./anim/AnimationEditor.tsx";
 import { BrowseView } from "./browse/BrowseView.tsx";
@@ -6,8 +7,6 @@ import { useMetadata, type MetadataStore } from "./metadata/useMetadata.ts";
 import PhaserGame from "./PhaserGame.tsx";
 import { SpriteSheetEditor } from "./sheet/SpriteSheetEditor.tsx";
 import { SingleEditor } from "./single/SingleEditor.tsx";
-
-type View = "browse" | "viewer";
 
 const navStyle: CSSProperties = {
   background: "#101116",
@@ -27,7 +26,7 @@ const tabStyle = (active: boolean): CSSProperties => {
     padding: "5px 14px",
   };
   if (active) {
-    return { ...base, background: "#243049", borderColor: "#5b8cff" };
+    return { ...base, background: "#243049", border: "1px solid #5b8cff" };
   }
   return { ...base, background: "#1d1f27" };
 };
@@ -45,30 +44,47 @@ const renderEditor = (store: MetadataStore, path: string, onClose: () => void): 
   return <AnimationEditor key={path} store={store} path={path} onClose={onClose} />;
 };
 
+const EditorRoute = ({ store }: { store: MetadataStore }): ReactNode => {
+  const path = useParams()["*"] ?? "";
+  const navigate = useNavigate();
+  return renderEditor(store, path, () => navigate("/"));
+};
+
 const App = () => {
   const store = useMetadata();
-  const [view, setView] = useState<View>("browse");
-  const [editing, setEditing] = useState<string | null>(null);
-
-  let content: ReactNode = <PhaserGame />;
-  if (view === "browse") {
-    content = <BrowseView store={store} onEdit={setEditing} />;
-    if (editing !== null) {
-      content = renderEditor(store, editing, () => setEditing(null));
-    }
-  }
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <nav style={navStyle}>
-        <button type="button" style={tabStyle(view === "browse")} onClick={() => setView("browse")}>
+        <button
+          type="button"
+          style={tabStyle(pathname !== "/viewer")}
+          onClick={() => navigate("/")}
+        >
           Browse
         </button>
-        <button type="button" style={tabStyle(view === "viewer")} onClick={() => setView("viewer")}>
+        <button
+          type="button"
+          style={tabStyle(pathname === "/viewer")}
+          onClick={() => navigate("/viewer")}
+        >
           Viewer
         </button>
       </nav>
-      <div style={{ flex: 1, minHeight: 0 }}>{content}</div>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <BrowseView store={store} onEdit={(path) => navigate(`/edit/${encodeURI(path)}`)} />
+            }
+          />
+          <Route path="/viewer" element={<PhaserGame />} />
+          <Route path="/edit/*" element={<EditorRoute store={store} />} />
+        </Routes>
+      </div>
     </div>
   );
 };

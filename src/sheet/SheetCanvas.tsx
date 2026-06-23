@@ -1,8 +1,10 @@
-import { useRef, type CSSProperties, type MouseEvent } from "react";
+import { useRef, type CSSProperties } from "react";
 
 import type { SubSprite, SubSpriteGroup } from "../metadata/schema.ts";
 import { GroupRect } from "./GroupRect.tsx";
+import type { SheetMode } from "./SheetPanel.tsx";
 import { sheetStyles } from "./sheetStyles.ts";
+import { SubSpriteRect } from "./SubSpriteRect.tsx";
 import type { Rect } from "./useSheetEditor.ts";
 import { toRect, useRectDraw } from "./useRectDraw.ts";
 
@@ -13,24 +15,12 @@ const placement = (rect: Rect, scale: number): CSSProperties => ({
   width: rect.width * scale,
 });
 
-const selectionStyle = (selected: boolean): CSSProperties => {
-  if (selected) {
-    return sheetStyles.rectSelected;
-  }
-  return {};
-};
-
-const rectStyle = (rect: Rect, scale: number, selected: boolean): CSSProperties => ({
-  ...sheetStyles.rect,
-  ...selectionStyle(selected),
-  ...placement(rect, scale),
-});
-
 type SheetCanvasProps = {
   url: string;
   width: number;
   height: number;
   scale: number;
+  mode: SheetMode;
   subSprites: SubSprite[];
   selectedIndex: number;
   groups: SubSpriteGroup[];
@@ -45,6 +35,7 @@ export const SheetCanvas = ({
   width,
   height,
   scale,
+  mode,
   subSprites,
   selectedIndex,
   groups,
@@ -55,11 +46,7 @@ export const SheetCanvas = ({
 }: SheetCanvasProps) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const { beginDraw, drag } = useRectDraw({ height, onDraw, overlay: overlayRef, scale, width });
-
-  const selectRect = (event: MouseEvent<HTMLDivElement>, index: number) => {
-    event.stopPropagation();
-    onSelect(index);
-  };
+  const groupsActive = mode === "group";
 
   return (
     <div style={{ ...sheetStyles.canvasFrame, height: height * scale, width: width * scale }}>
@@ -76,17 +63,19 @@ export const SheetCanvas = ({
             group={group}
             scale={scale}
             selected={index === selectedGroupIndex}
+            interactive={groupsActive}
             onSelect={() => onSelectGroup(index)}
           />
         ))}
         {subSprites.map((subSprite, index) => (
-          <div
+          <SubSpriteRect
             key={index}
-            style={rectStyle(subSprite.rect, scale, index === selectedIndex)}
-            onMouseDown={(event) => selectRect(event, index)}
-          >
-            <span style={sheetStyles.rectLabel}>{subSprite.name || "(unnamed)"}</span>
-          </div>
+            subSprite={subSprite}
+            scale={scale}
+            selected={index === selectedIndex}
+            interactive={!groupsActive}
+            onSelect={() => onSelect(index)}
+          />
         ))}
         {drag && <div style={{ ...sheetStyles.drawPreview, ...placement(toRect(drag), scale) }} />}
       </div>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { EditorHeader } from "../anim/EditorHeader.tsx";
 import { editorStyles } from "../anim/editorStyles.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
+import { GroupDetail } from "./GroupDetail.tsx";
 import { SheetCanvas } from "./SheetCanvas.tsx";
 import { SheetPanel, type SheetMode } from "./SheetPanel.tsx";
 import { sheetStyles } from "./sheetStyles.ts";
@@ -26,6 +27,7 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
   if (mode === "group") {
     onDraw = groupState.handlers.draw;
   }
+  const selectedGroup = groupState.groups[groupState.selectedIndex];
   return (
     <div style={editorStyles.page}>
       <EditorHeader path={path} onClose={onClose} />
@@ -36,15 +38,28 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
             width={view.entry.width}
             height={view.entry.height}
             scale={view.scale}
+            mode={mode}
             subSprites={view.subSprites}
             selectedIndex={view.selectedIndex}
             groups={groupState.groups}
             selectedGroupIndex={groupState.selectedIndex}
             onSelect={view.handlers.select}
-            onSelectGroup={groupState.handlers.select}
+            onSelectGroup={groupState.handlers.toggle}
             onDraw={onDraw}
           />
         </div>
+        {mode === "group" && selectedGroup && (
+          <GroupDetail
+            group={selectedGroup}
+            url={view.url}
+            sheetWidth={view.entry.width}
+            sheetHeight={view.entry.height}
+            onName={(name) => groupState.handlers.setName(groupState.selectedIndex, name)}
+            onPrev={groupState.handlers.prev}
+            onNext={groupState.handlers.next}
+            onClose={groupState.handlers.deselect}
+          />
+        )}
         <SheetPanel
           mode={mode}
           onMode={setMode}

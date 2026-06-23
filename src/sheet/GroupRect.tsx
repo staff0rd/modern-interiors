@@ -2,7 +2,7 @@ import type { CSSProperties, MouseEvent } from "react";
 
 import type { SubSpriteGroup } from "../metadata/schema.ts";
 import { groupCells } from "./groupCells.ts";
-import { sheetStyles } from "./sheetStyles.ts";
+import { inactiveStyle, sheetStyles } from "./sheetStyles.ts";
 
 const selectionStyle = (selected: boolean): CSSProperties => {
   if (selected) {
@@ -24,16 +24,20 @@ type GroupRectProps = {
   group: SubSpriteGroup;
   scale: number;
   selected: boolean;
+  interactive: boolean;
   onSelect: () => void;
 };
 
-export const GroupRect = ({ group, scale, selected, onSelect }: GroupRectProps) => {
+export const GroupRect = ({ group, scale, selected, interactive, onSelect }: GroupRectProps) => {
   const select = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     onSelect();
   };
   return (
-    <div style={groupStyle(group, scale, selected)} onMouseDown={select}>
+    <div
+      style={{ ...groupStyle(group, scale, selected), ...inactiveStyle(interactive) }}
+      onMouseDown={select}
+    >
       {groupCells(group).map((cell) => (
         <div
           key={cell.index}
