@@ -69,6 +69,14 @@ export const sheetStyles = {
     pointerEvents: "none",
     position: "absolute",
   },
+  grid: { inset: 0, pointerEvents: "none", position: "absolute" },
+  gridToggle: {
+    alignItems: "center",
+    color: "#cfd2dc",
+    display: "flex",
+    fontSize: 12,
+    gap: 4,
+  },
   group: {
     border: "1px solid #57d9a3",
     boxShadow: "0 0 0 1px #00000088",

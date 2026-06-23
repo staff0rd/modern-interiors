@@ -11,11 +11,17 @@ type GroupPanelProps = {
 };
 
 export const GroupPanel = ({ groupState }: GroupPanelProps) => {
-  const { groups, selectedIndex, template, setTemplate, handlers } = groupState;
+  const { groups, selectedIndex, template, setTemplate, showGrid, setShowGrid, handlers } =
+    groupState;
   const selected = groups[selectedIndex];
   return (
     <>
-      <GroupTemplateForm template={template} onChange={setTemplate} />
+      <GroupTemplateForm
+        template={template}
+        onChange={setTemplate}
+        showGrid={showGrid}
+        onShowGrid={setShowGrid}
+      />
       {groups.length > EMPTY && (
         <button type="button" style={sheetStyles.addButton} onClick={handlers.applyTemplateAll}>
           Reset all {groups.length} groups from template

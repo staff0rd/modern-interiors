@@ -49,6 +49,8 @@ export type SheetGroupsState = {
   selectedIndex: number;
   template: GroupTemplate;
   setTemplate: (template: GroupTemplate) => void;
+  showGrid: boolean;
+  setShowGrid: (showGrid: boolean) => void;
   handlers: GroupHandlers;
 };
 
@@ -70,6 +72,7 @@ export const useSheetGroups = (
   const [template, setTemplateState] = useState<GroupTemplate>(
     () => asset?.groupTemplate ?? defaultTemplate(entry),
   );
+  const [showGrid, setShowGrid] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedIndex = resolveSelection(searchParams.get(GROUP_PARAM), groups.length);
   const setSelectedIndex = (index: number) => {
@@ -97,10 +100,12 @@ export const useSheetGroups = (
     groups,
     handlers,
     selectedIndex,
+    setShowGrid,
     setTemplate: (next) => {
       setTemplateState(next);
       store.setGroupTemplate(path, next);
     },
+    showGrid,
     template,
   };
 };

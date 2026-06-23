@@ -11,9 +11,16 @@ const parseVariants = (text: string): string[] => text.split("\n").map((line) =>
 type GroupTemplateFormProps = {
   template: GroupTemplate;
   onChange: (template: GroupTemplate) => void;
+  showGrid: boolean;
+  onShowGrid: (showGrid: boolean) => void;
 };
 
-export const GroupTemplateForm = ({ template, onChange }: GroupTemplateFormProps) => (
+export const GroupTemplateForm = ({
+  template,
+  onChange,
+  showGrid,
+  onShowGrid,
+}: GroupTemplateFormProps) => (
   <div style={editorStyles.field}>
     <span style={{ fontWeight: 600 }}>Group template</span>
     <p style={sheetStyles.hint}>
@@ -34,6 +41,14 @@ export const GroupTemplateForm = ({ template, onChange }: GroupTemplateFormProps
         min={MIN_CELL}
         onChange={(cellHeight) => onChange({ ...template, cellHeight })}
       />
+      <label style={sheetStyles.gridToggle}>
+        <input
+          type="checkbox"
+          checked={showGrid}
+          onChange={(event) => onShowGrid(event.target.checked)}
+        />
+        Show grid
+      </label>
     </div>
     <label style={editorStyles.field}>
       Variant names (one per line)

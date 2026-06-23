@@ -3,17 +3,40 @@ import { useState } from "react";
 import { EditorHeader } from "../anim/EditorHeader.tsx";
 import { editorStyles } from "../anim/editorStyles.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
-import { GroupDetail } from "./GroupDetail.tsx";
+import { GroupDetailPanel } from "./GroupDetailPanel.tsx";
+import { snapRect } from "./groupCells.ts";
 import { SheetCanvas } from "./SheetCanvas.tsx";
 import { SheetPanel, type SheetMode } from "./SheetPanel.tsx";
 import { sheetStyles } from "./sheetStyles.ts";
-import { useSheetEditor } from "./useSheetEditor.ts";
-import { useSheetGroups } from "./useSheetGroups.ts";
+import { useSheetEditor, type Rect, type SheetEditorState } from "./useSheetEditor.ts";
+import { useSheetGroups, type SheetGroupsState } from "./useSheetGroups.ts";
 
 type SpriteSheetEditorProps = {
   store: MetadataStore;
   path: string;
   onClose: () => void;
+};
+
+const drawHandlerFor = (mode: SheetMode, view: SheetEditorState, groupState: SheetGroupsState) => {
+  if (mode === "group") {
+    return groupState.handlers.draw;
+  }
+  return view.handlers.draw;
+};
+
+const gridCellFor = (mode: SheetMode, groupState: SheetGroupsState) => {
+  if (mode === "group" && groupState.showGrid) {
+    return { height: groupState.template.cellHeight, width: groupState.template.cellWidth };
+  }
+  return undefined;
+};
+
+const snapFor = (mode: SheetMode, groupState: SheetGroupsState) => {
+  if (mode === "group") {
+    const { cellWidth, cellHeight } = groupState.template;
+    return (rect: Rect) => snapRect(rect, cellWidth, cellHeight);
+  }
+  return undefined;
 };
 
 export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorProps) => {
@@ -23,11 +46,9 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
   if (!view.entry) {
     return <div style={{ ...editorStyles.page, padding: 20 }}>Asset not found in manifest.</div>;
   }
-  let onDraw = view.handlers.draw;
-  if (mode === "group") {
-    onDraw = groupState.handlers.draw;
-  }
-  const selectedGroup = groupState.groups[groupState.selectedIndex];
+  const onDraw = drawHandlerFor(mode, view, groupState);
+  const gridCell = gridCellFor(mode, groupState);
+  const snap = snapFor(mode, groupState);
   return (
     <div style={editorStyles.page}>
       <EditorHeader path={path} onClose={onClose} />
@@ -39,6 +60,8 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
             height={view.entry.height}
             scale={view.scale}
             mode={mode}
+            gridCell={gridCell}
+            snap={snap}
             subSprites={view.subSprites}
             selectedIndex={view.selectedIndex}
             groups={groupState.groups}
@@ -48,18 +71,7 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
             onDraw={onDraw}
           />
         </div>
-        {mode === "group" && selectedGroup && (
-          <GroupDetail
-            group={selectedGroup}
-            url={view.url}
-            sheetWidth={view.entry.width}
-            sheetHeight={view.entry.height}
-            onName={(name) => groupState.handlers.setName(groupState.selectedIndex, name)}
-            onPrev={groupState.handlers.prev}
-            onNext={groupState.handlers.next}
-            onClose={groupState.handlers.deselect}
-          />
-        )}
+        <GroupDetailPanel mode={mode} view={view} groupState={groupState} />
         <SheetPanel
           mode={mode}
           onMode={setMode}
