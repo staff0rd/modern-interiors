@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { SAVE_LABELS } from "../metadata/saveLabels.ts";
 import type { SaveState } from "../metadata/useMetadata.ts";
 import { editorStyles } from "./editorStyles.ts";
 import { NumberField } from "./NumberField.tsx";
@@ -9,13 +10,6 @@ const MIN_TILES = 1;
 const NAME_WIDTH = 200;
 const NUMBER_WIDTH = 90;
 const TILE_WIDTH = 70;
-
-const saveLabels: Record<SaveState, string> = {
-  error: "save failed",
-  idle: "",
-  saved: "saved",
-  saving: "saving…",
-};
 
 type AnimationControlsProps = {
   name: string;
@@ -91,6 +85,6 @@ export const AnimationControls = ({
       min={MIN_TILES}
       onChange={onTileRows}
     />
-    <span style={{ color: "#8a8d9b", paddingBottom: 6 }}>{saveLabels[saveState]}</span>
+    <span style={{ color: "#8a8d9b", paddingBottom: 6 }}>{SAVE_LABELS[saveState]}</span>
   </div>
 );

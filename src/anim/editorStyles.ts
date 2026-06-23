@@ -94,6 +94,55 @@ export const editorStyles = {
   },
 } satisfies Record<string, CSSProperties>;
 
+export const tabBarStyles = {
+  add: {
+    background: "#1d1f27",
+    border: "1px dashed #3a3d4a",
+    borderRadius: 6,
+    color: "#cfd2dc",
+    cursor: "pointer",
+    fontSize: 12,
+    padding: "4px 10px",
+  },
+  bar: {
+    alignItems: "center",
+    borderBottom: "1px solid #2a2c36",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    padding: "8px 16px",
+  },
+  label: {
+    background: "transparent",
+    border: "none",
+    color: "inherit",
+    cursor: "pointer",
+    font: "inherit",
+    padding: 0,
+  },
+  remove: {
+    background: "transparent",
+    border: "none",
+    color: "#8a8d9b",
+    cursor: "pointer",
+    fontSize: 14,
+    lineHeight: 1,
+    padding: 0,
+  },
+  tab: {
+    alignItems: "center",
+    background: "#1d1f27",
+    border: "1px solid #2a2c36",
+    borderRadius: 6,
+    color: "#cfd2dc",
+    display: "flex",
+    fontSize: 12,
+    gap: 8,
+    padding: "4px 10px",
+  },
+  tabActive: { background: "#243049", borderColor: "#5b8cff", color: "#e8e8ef" },
+} satisfies Record<string, CSSProperties>;
+
 const buttonBase: CSSProperties = {
   background: "#1d1f27",
   border: "1px solid #2a2c36",

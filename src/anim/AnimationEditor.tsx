@@ -1,19 +1,19 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { AnimationControls } from "./AnimationControls.tsx";
 import AnimationPreview from "./AnimationPreview.tsx";
-import { backButtonStyle, editorStyles, resetButtonStyle } from "./editorStyles.ts";
+import { AnimationTabs } from "./AnimationTabs.tsx";
+import { EditorHeader } from "./EditorHeader.tsx";
+import { editorStyles, resetButtonStyle } from "./editorStyles.ts";
 import { FrameSequence } from "./FrameSequence.tsx";
 import { useAnimationEditor, type AnimationEditorState } from "./useAnimationEditor.ts";
 
 const TEXTURE_KEY = "sheet";
 const DEFAULT_TILES = 1;
 
-const pathStyle: CSSProperties = { color: "#cfd2dc", fontFamily: "monospace", fontSize: 12 };
-
 const editorBody = (state: AnimationEditorState): ReactNode => {
-  const { geometry, url, draft, handlers } = state;
+  const { geometry, url, draft, handlers, activeIndex } = state;
   if (!geometry) {
     return (
       <div style={{ padding: 20 }}>
@@ -48,6 +48,7 @@ const editorBody = (state: AnimationEditorState): ReactNode => {
         </button>
       </div>
       <FrameSequence
+        key={activeIndex}
         geometry={geometry}
         url={url}
         frameOrder={draft.frameOrder}
@@ -70,15 +71,17 @@ export const AnimationEditor = ({ store, path, onClose }: AnimationEditorProps) 
   if (!state.entry) {
     return <div style={{ ...editorStyles.page, padding: 20 }}>Asset not found in manifest.</div>;
   }
-  const { draft, handlers } = state;
+  const { draft, handlers, animations, activeIndex } = state;
   return (
     <div style={editorStyles.page}>
-      <div style={editorStyles.header}>
-        <button type="button" style={backButtonStyle} onClick={onClose}>
-          ← Back
-        </button>
-        <span style={pathStyle}>{path}</span>
-      </div>
+      <EditorHeader path={path} onClose={onClose} />
+      <AnimationTabs
+        animations={animations}
+        activeIndex={activeIndex}
+        onSelect={handlers.selectAnimation}
+        onAdd={handlers.addAnimation}
+        onRemove={handlers.removeAnimation}
+      />
       <AnimationControls
         name={draft.name}
         frameRate={draft.frameRate}

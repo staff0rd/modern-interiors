@@ -21,7 +21,7 @@ export type FrameGridGeometry = {
   frameHeight: number;
 };
 
-export const frameGridGeometry = (
+const frameGridGeometry = (
   entry: ManifestEntry,
   tileColumns: number,
   tileRows: number,
@@ -37,12 +37,19 @@ export const frameGridGeometry = (
   return { columns, frameHeight: blockHeight, frameWidth: blockWidth, rows, total: columns * rows };
 };
 
-const baseGeometry = (entry: ManifestEntry | undefined): FrameGridGeometry | null => {
+export const geometryFor = (
+  entry: ManifestEntry | undefined,
+  columns: number,
+  rows: number,
+): FrameGridGeometry | null => {
   if (!entry) {
     return null;
   }
-  return frameGridGeometry(entry, DEFAULT_TILES, DEFAULT_TILES);
+  return frameGridGeometry(entry, columns, rows);
 };
+
+const baseGeometry = (entry: ManifestEntry | undefined): FrameGridGeometry | null =>
+  geometryFor(entry, DEFAULT_TILES, DEFAULT_TILES);
 
 export const allFrames = (geometry: FrameGridGeometry | null): number[] => {
   if (!geometry) {
@@ -110,6 +117,18 @@ const nameFor = (entry: ManifestEntry | undefined): string => {
     return "";
   }
   return inferAnimationName(entry.path);
+};
+
+export const uniqueAnimationName = (base: string, existing: Animation[]): string => {
+  const taken = new Set(existing.map((animation) => animation.name));
+  if (!taken.has(base)) {
+    return base;
+  }
+  let suffix = FIRST_ORDINAL + FIRST_ORDINAL;
+  while (taken.has(`${base}_${suffix}`)) {
+    suffix += FIRST_ORDINAL;
+  }
+  return `${base}_${suffix}`;
 };
 
 export const defaultAnimation = (entry: ManifestEntry | undefined): Animation => ({

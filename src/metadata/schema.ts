@@ -7,8 +7,9 @@ export const KIND_VALUES = ["animation", "single", "spritesheet"] as const;
 const kindSchema = z.enum(KIND_VALUES);
 export type Kind = z.infer<typeof kindSchema>;
 
-const ORIENTATION_VALUES = ["up", "down", "left", "right", "none"] as const;
+export const ORIENTATION_VALUES = ["up", "down", "left", "right", "none"] as const;
 const orientationSchema = z.enum(ORIENTATION_VALUES);
+export type Orientation = z.infer<typeof orientationSchema>;
 
 const manifestEntrySchema = z.object({
   frameHeight: z.number().int().positive().nullable(),
@@ -47,17 +48,37 @@ export const animationSchema = z.object({
 });
 export type Animation = z.infer<typeof animationSchema>;
 
-const subSpriteSchema = z.object({
+export const subSpriteSchema = z.object({
   description: z.string().optional(),
   name: z.string().min(MIN_NAME_LENGTH),
   rect: rectSchema,
 });
+export type SubSprite = z.infer<typeof subSpriteSchema>;
+
+export const subSpriteGroupSchema = z.object({
+  cellHeight: z.number().int().positive(),
+  cellWidth: z.number().int().positive(),
+  description: z.string().optional(),
+  name: z.string().min(MIN_NAME_LENGTH),
+  rect: rectSchema,
+  variantNames: z.array(z.string()),
+});
+export type SubSpriteGroup = z.infer<typeof subSpriteGroupSchema>;
+
+const groupTemplateSchema = z.object({
+  cellHeight: z.number().int().positive(),
+  cellWidth: z.number().int().positive(),
+  variantNames: z.array(z.string()),
+});
+export type GroupTemplate = z.infer<typeof groupTemplateSchema>;
 
 const assetMetadataSchema = z.object({
   animations: z.array(animationSchema).optional(),
   description: z.string().optional(),
+  groupTemplate: groupTemplateSchema.optional(),
   kind: kindSchema.optional(),
   orientation: orientationSchema.optional(),
+  subSpriteGroups: z.array(subSpriteGroupSchema).optional(),
   subSprites: z.array(subSpriteSchema).optional(),
 });
 export type AssetMetadata = z.infer<typeof assetMetadataSchema>;

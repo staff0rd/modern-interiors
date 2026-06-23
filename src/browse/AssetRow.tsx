@@ -1,5 +1,3 @@
-import type { CSSProperties } from "react";
-
 import { KIND_VALUES, type Kind } from "../metadata/schema.ts";
 import { badgeStyle, styles } from "./browseStyles.ts";
 import type { Row } from "./rows.ts";
@@ -18,15 +16,6 @@ const doneLabel = (done: boolean): string => {
   return "incomplete";
 };
 
-const editable = (kind: Kind): boolean => kind === "animation";
-
-const rowStyle = (kind: Kind): CSSProperties => {
-  if (editable(kind)) {
-    return { ...styles.row, cursor: "pointer" };
-  }
-  return styles.row;
-};
-
 type AssetRowProps = {
   row: Row;
   root: string;
@@ -35,13 +24,9 @@ type AssetRowProps = {
 };
 
 export const AssetRow = ({ row, root, onKindChange, onEdit }: AssetRowProps) => {
-  const open = () => {
-    if (editable(row.kind)) {
-      onEdit(row.entry.path);
-    }
-  };
+  const open = () => onEdit(row.entry.path);
   return (
-    <div style={rowStyle(row.kind)} onClick={open}>
+    <div style={{ ...styles.row, cursor: "pointer" }} onClick={open}>
       <img src={`/${root}/${row.entry.path}`} alt="" loading="lazy" style={styles.thumb} />
       <span style={styles.path} title={row.entry.path}>
         {row.entry.path}

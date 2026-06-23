@@ -1,9 +1,11 @@
-import { useState, type CSSProperties } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 
 import { AnimationEditor } from "./anim/AnimationEditor.tsx";
 import { BrowseView } from "./browse/BrowseView.tsx";
-import { useMetadata } from "./metadata/useMetadata.ts";
+import { useMetadata, type MetadataStore } from "./metadata/useMetadata.ts";
 import PhaserGame from "./PhaserGame.tsx";
+import { SpriteSheetEditor } from "./sheet/SpriteSheetEditor.tsx";
+import { SingleEditor } from "./single/SingleEditor.tsx";
 
 type View = "browse" | "viewer";
 
@@ -30,23 +32,29 @@ const tabStyle = (active: boolean): CSSProperties => {
   return { ...base, background: "#1d1f27" };
 };
 
+const renderEditor = (store: MetadataStore, path: string, onClose: () => void): ReactNode => {
+  const kind =
+    store.metadata?.assets[path]?.kind ??
+    store.manifest?.entries.find((entry) => entry.path === path)?.kind;
+  if (kind === "single") {
+    return <SingleEditor key={path} store={store} path={path} onClose={onClose} />;
+  }
+  if (kind === "spritesheet") {
+    return <SpriteSheetEditor key={path} store={store} path={path} onClose={onClose} />;
+  }
+  return <AnimationEditor key={path} store={store} path={path} onClose={onClose} />;
+};
+
 const App = () => {
   const store = useMetadata();
   const [view, setView] = useState<View>("browse");
   const [editing, setEditing] = useState<string | null>(null);
 
-  let content = <PhaserGame />;
+  let content: ReactNode = <PhaserGame />;
   if (view === "browse") {
     content = <BrowseView store={store} onEdit={setEditing} />;
     if (editing !== null) {
-      content = (
-        <AnimationEditor
-          key={editing}
-          store={store}
-          path={editing}
-          onClose={() => setEditing(null)}
-        />
-      );
+      content = renderEditor(store, editing, () => setEditing(null));
     }
   }
 

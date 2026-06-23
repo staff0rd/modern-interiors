@@ -2,20 +2,50 @@ import { useCallback, useEffect, useState } from "react";
 
 import { fetchManifest, fetchMetadata, saveMetadata } from "./api.ts";
 import { errorMessage } from "./errorMessage.ts";
-import type { Animation, AssetMetadata, Kind, Manifest, Metadata } from "./schema.ts";
+import type {
+  Animation,
+  AssetMetadata,
+  GroupTemplate,
+  Kind,
+  Manifest,
+  Metadata,
+  Orientation,
+  SubSprite,
+  SubSpriteGroup,
+} from "./schema.ts";
 
 type LoadStatus = "loading" | "ready" | "error";
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
-export type MetadataStore = {
+type PatchAsset = (path: string, patch: Partial<AssetMetadata>) => void;
+
+type AssetSetters = {
+  setKind: (path: string, kind: Kind) => void;
+  setAnimations: (path: string, animations: Animation[]) => void;
+  setDescription: (path: string, description: string | undefined) => void;
+  setOrientation: (path: string, orientation: Orientation | undefined) => void;
+  setSubSprites: (path: string, subSprites: SubSprite[]) => void;
+  setSubSpriteGroups: (path: string, subSpriteGroups: SubSpriteGroup[]) => void;
+  setGroupTemplate: (path: string, groupTemplate: GroupTemplate) => void;
+};
+
+export type MetadataStore = AssetSetters & {
   manifest: Manifest | null;
   metadata: Metadata | null;
   status: LoadStatus;
   error: string | null;
   saveState: SaveState;
-  setKind: (path: string, kind: Kind) => void;
-  setAnimations: (path: string, animations: Animation[]) => void;
 };
+
+const assetSetters = (patchAsset: PatchAsset): AssetSetters => ({
+  setAnimations: (path, animations) => patchAsset(path, { animations }),
+  setDescription: (path, description) => patchAsset(path, { description }),
+  setGroupTemplate: (path, groupTemplate) => patchAsset(path, { groupTemplate }),
+  setKind: (path, kind) => patchAsset(path, { kind }),
+  setOrientation: (path, orientation) => patchAsset(path, { orientation }),
+  setSubSpriteGroups: (path, subSpriteGroups) => patchAsset(path, { subSpriteGroups }),
+  setSubSprites: (path, subSprites) => patchAsset(path, { subSprites }),
+});
 
 export const useMetadata = (): MetadataStore => {
   const [manifest, setManifest] = useState<Manifest | null>(null);
@@ -65,15 +95,12 @@ export const useMetadata = (): MetadataStore => {
     });
   }, []);
 
-  const setKind = useCallback(
-    (path: string, kind: Kind) => patchAsset(path, { kind }),
-    [patchAsset],
-  );
-
-  const setAnimations = useCallback(
-    (path: string, animations: Animation[]) => patchAsset(path, { animations }),
-    [patchAsset],
-  );
-
-  return { error, manifest, metadata, saveState, setAnimations, setKind, status };
+  return {
+    error,
+    manifest,
+    metadata,
+    saveState,
+    status,
+    ...assetSetters(patchAsset),
+  };
 };
