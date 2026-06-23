@@ -1,0 +1,107 @@
+import type { CSSProperties } from "react";
+
+export const editorStyles = {
+  body: { display: "flex", flex: 1, flexDirection: "column", minHeight: 0 },
+  cell: {
+    background: "#0d0e12",
+    border: "1px solid #2a2c36",
+    borderRadius: 4,
+    flexShrink: 0,
+    padding: 2,
+    position: "relative",
+  },
+  checkboxField: {
+    alignItems: "center",
+    color: "#8a8d9b",
+    display: "flex",
+    fontSize: 12,
+    gap: 6,
+    paddingBottom: 6,
+  },
+  controls: {
+    alignItems: "flex-end",
+    borderBottom: "1px solid #2a2c36",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 16,
+    padding: "12px 16px",
+  },
+  field: { color: "#8a8d9b", display: "flex", flexDirection: "column", fontSize: 12, gap: 4 },
+  header: {
+    alignItems: "center",
+    borderBottom: "1px solid #2a2c36",
+    display: "flex",
+    gap: 12,
+    padding: "10px 16px",
+  },
+  index: {
+    background: "#101116cc",
+    borderRadius: 3,
+    bottom: 2,
+    color: "#cfd2dc",
+    fontSize: 10,
+    padding: "0 3px",
+    position: "absolute",
+    right: 2,
+  },
+  input: {
+    background: "#1d1f27",
+    border: "1px solid #2a2c36",
+    borderRadius: 6,
+    color: "#e8e8ef",
+    padding: "6px 8px",
+  },
+  page: {
+    color: "#e8e8ef",
+    display: "flex",
+    flexDirection: "column",
+    font: "14px system-ui, sans-serif",
+    height: "100%",
+  },
+  preview: { background: "#0d0e12", display: "flex", flex: 1, minHeight: 0 },
+  strip: {
+    alignContent: "flex-start",
+    alignItems: "flex-start",
+    borderTop: "1px solid #2a2c36",
+    color: "#8a8d9b",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    maxHeight: "45%",
+    overflowY: "auto",
+    padding: 16,
+  },
+  stripBar: {
+    alignItems: "center",
+    color: "#8a8d9b",
+    display: "flex",
+    gap: 12,
+    justifyContent: "space-between",
+    padding: "8px 16px 0",
+  },
+  toggleButton: {
+    background: "#101116cc",
+    border: "1px solid #2a2c36",
+    borderRadius: 3,
+    color: "#cfd2dc",
+    cursor: "pointer",
+    fontSize: 12,
+    left: 2,
+    lineHeight: 1,
+    padding: "1px 5px",
+    position: "absolute",
+    top: 2,
+  },
+} satisfies Record<string, CSSProperties>;
+
+const buttonBase: CSSProperties = {
+  background: "#1d1f27",
+  border: "1px solid #2a2c36",
+  borderRadius: 6,
+  color: "#e8e8ef",
+  cursor: "pointer",
+  padding: "5px 12px",
+};
+
+export const backButtonStyle: CSSProperties = buttonBase;
+export const resetButtonStyle: CSSProperties = { ...buttonBase, fontSize: 12, padding: "3px 10px" };

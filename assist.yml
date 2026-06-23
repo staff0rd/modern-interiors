@@ -56,3 +56,12 @@ run:
       - "60"
 commit:
   push: true
+deny:
+  - pattern: npm run dev
+    message: Do not start the dev server — the user runs it themselves. Use /verify to check work.
+  - pattern: vite dev
+    message: Do not start the dev server — the user runs it themselves. Use /verify to check work.
+  - pattern: tsc
+    message: Do not run tsc/build directly — run /verify (assist verify), which builds and runs all checks.
+  - pattern: oxlint
+    message: Do not run oxlint directly — run /verify (assist verify); its verify:lint step runs oxlint and prints the same rule violations.
