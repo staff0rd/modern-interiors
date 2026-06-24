@@ -10,12 +10,15 @@ const rowStyle = (active: boolean): CSSProperties => {
   return sheetStyles.row;
 };
 
+const EMPTY = 0;
+
 type SubSpriteListProps = {
   subSprites: SubSprite[];
   selectedIndex: number;
   onSelect: (index: number) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
+  onRemoveAll: () => void;
 };
 
 export const SubSpriteList = ({
@@ -24,11 +27,27 @@ export const SubSpriteList = ({
   onSelect,
   onAdd,
   onRemove,
+  onRemoveAll,
 }: SubSpriteListProps) => (
   <>
-    <button type="button" style={sheetStyles.addButton} onClick={onAdd}>
-      ＋ Add sub-sprite
-    </button>
+    <div style={sheetStyles.listActions}>
+      <button type="button" style={sheetStyles.addButton} onClick={onAdd}>
+        ＋ Add sub-sprite
+      </button>
+      {subSprites.length > EMPTY && (
+        <button
+          type="button"
+          style={sheetStyles.clearButton}
+          onClick={() => {
+            if (window.confirm(`Remove all ${subSprites.length} sub-sprites?`)) {
+              onRemoveAll();
+            }
+          }}
+        >
+          Remove all
+        </button>
+      )}
+    </div>
     <p style={sheetStyles.hint}>Or drag a rectangle on the sheet to define one.</p>
     {subSprites.map((subSprite, index) => (
       <div key={index} style={rowStyle(index === selectedIndex)} onClick={() => onSelect(index)}>

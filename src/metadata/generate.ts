@@ -1,6 +1,7 @@
 import { buildByKind, type AtlasFrame, type FrameAnim } from "./generateFrames.ts";
 import type { AssetMetadata, Kind, Manifest, ManifestEntry, Metadata } from "./schema.ts";
-import { buildVariantIndex, resolveMetadata } from "./variants.ts";
+import { buildVariantIndex } from "./variantIndex.ts";
+import { resolveMetadata } from "./variants.ts";
 
 const ZERO = 0;
 const ONE = 1;

@@ -11,12 +11,15 @@ const rowStyle = (active: boolean): CSSProperties => {
   return sheetStyles.row;
 };
 
+const EMPTY = 0;
+
 type GroupListProps = {
   groups: SubSpriteGroup[];
   selectedIndex: number;
   onSelect: (index: number) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
+  onRemoveAll: () => void;
   onTile: (index: number) => void;
 };
 
@@ -28,12 +31,28 @@ export const GroupList = ({
   onSelect,
   onAdd,
   onRemove,
+  onRemoveAll,
   onTile,
 }: GroupListProps) => (
   <>
-    <button type="button" style={sheetStyles.addButton} onClick={onAdd}>
-      ＋ Add group
-    </button>
+    <div style={sheetStyles.listActions}>
+      <button type="button" style={sheetStyles.addButton} onClick={onAdd}>
+        ＋ Add group
+      </button>
+      {groups.length > EMPTY && (
+        <button
+          type="button"
+          style={sheetStyles.clearButton}
+          onClick={() => {
+            if (window.confirm(`Remove all ${groups.length} groups?`)) {
+              onRemoveAll();
+            }
+          }}
+        >
+          Remove all
+        </button>
+      )}
+    </div>
     <p style={sheetStyles.hint}>Or drag a rectangle on the sheet; it snaps to the cell grid.</p>
     {groups.map((group, index) => (
       <div key={index} style={rowStyle(index === selectedIndex)} onClick={() => onSelect(index)}>

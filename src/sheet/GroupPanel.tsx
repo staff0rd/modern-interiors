@@ -33,6 +33,7 @@ export const GroupPanel = ({ groupState }: GroupPanelProps) => {
         onSelect={handlers.select}
         onAdd={handlers.add}
         onRemove={handlers.remove}
+        onRemoveAll={handlers.removeAll}
         onTile={handlers.tile}
       />
       {selected && (

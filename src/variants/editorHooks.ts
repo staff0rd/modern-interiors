@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import type { EditorNav } from "../anim/EditorHeader.tsx";
 import { useAdjacent } from "../browse/useAdjacent.ts";
 import type { Manifest, Metadata } from "../metadata/schema.ts";
+import { buildVariantIndex } from "../metadata/variantIndex.ts";
 import {
-  buildVariantIndex,
   resolveMetadata,
   variantMembers,
   type ResolvedMetadata,

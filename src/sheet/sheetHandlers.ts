@@ -1,5 +1,6 @@
 import { subSpriteSchema, type ManifestEntry, type SubSprite } from "../metadata/schema.ts";
 import { detectedSubSprites, type DetectedCell } from "./detectOccupiedCells.ts";
+import { snapRect } from "./groupCells.ts";
 
 type Rect = SubSprite["rect"];
 
@@ -13,6 +14,7 @@ export type SheetHandlers = {
   autoDetect: (cells: DetectedCell[], groupRects: Rect[], replace: boolean) => number;
   draw: (rect: Rect) => void;
   remove: (index: number) => void;
+  removeAll: () => void;
   select: (index: number) => void;
   deselect: () => void;
   prev: () => void;
@@ -65,6 +67,13 @@ const commit = (context: SheetContext, next: SubSprite[]) => {
   context.persist(next.filter((subSprite) => subSpriteSchema.safeParse(subSprite).success));
 };
 
+const snapToFrame = (entry: ManifestEntry | undefined, rect: Rect): Rect => {
+  if (!entry?.frameWidth || !entry?.frameHeight) {
+    return rect;
+  }
+  return snapRect(rect, entry.frameWidth, entry.frameHeight);
+};
+
 const append = (context: SheetContext, rect: Rect) => {
   commit(context, [...context.subSprites, { name: "", rect }]);
   context.setSelectedIndex(context.subSprites.length);
@@ -102,15 +111,21 @@ const removeAt = (context: SheetContext, index: number) => {
   context.setSelectedIndex(NONE);
 };
 
+const removeAll = (context: SheetContext) => {
+  commit(context, []);
+  context.setSelectedIndex(NONE);
+};
+
 export const makeSheetHandlers = (context: SheetContext): SheetHandlers => ({
   add: () => append(context, defaultRect(context.entry)),
   autoDetect: (cells, groupRects, replace) =>
     autoDetectInto(context, { cells, groupRects, replace }),
   deselect: () => context.setSelectedIndex(NONE),
-  draw: (rect) => append(context, rect),
+  draw: (rect) => append(context, snapToFrame(context.entry, rect)),
   next: () => stepSelection(context, STEP),
   prev: () => stepSelection(context, -STEP),
   remove: (index) => removeAt(context, index),
+  removeAll: () => removeAll(context),
   select: context.setSelectedIndex,
   setDescription: (index, description) =>
     updateAt(context, index, { description: describe(description) }),

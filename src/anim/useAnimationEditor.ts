@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { animationSchema, type Animation, type ManifestEntry } from "../metadata/schema.ts";
+import { useDebouncedCallback } from "../metadata/useDebouncedCallback.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { makeHandlers, type AnimationHandlers } from "./animationHandlers.ts";
 import { defaultAnimation, geometryFor, type FrameGridGeometry } from "./frames.ts";
@@ -42,10 +43,10 @@ export const useAnimationEditor = (store: MetadataStore, path: string): Animatio
     [entry, draft.tileColumns, draft.tileRows],
   );
 
-  const persist = (next: Animation[]) => {
+  const persist = useDebouncedCallback((next: Animation[]) => {
     const valid = next.filter((animation) => animationSchema.safeParse(animation).success);
     persistAnimations(path, valid);
-  };
+  });
 
   return {
     activeIndex,

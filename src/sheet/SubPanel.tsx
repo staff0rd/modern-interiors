@@ -19,6 +19,7 @@ export const SubPanel = ({ view, groupRects }: SubPanelProps) => {
         onSelect={handlers.select}
         onAdd={handlers.add}
         onRemove={handlers.remove}
+        onRemoveAll={handlers.removeAll}
       />
       <AutoDetectControls
         url={url}

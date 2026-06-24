@@ -43,6 +43,15 @@ export const sheetStyles = {
     top: 0,
     whiteSpace: "nowrap",
   },
+  clearButton: {
+    background: "#1d1f27",
+    border: "1px solid #5a3a3a",
+    borderRadius: 6,
+    color: "#e0a3a3",
+    cursor: "pointer",
+    fontSize: 12,
+    padding: "6px 10px",
+  },
   detailArea: {
     background: "#0d0e12",
     borderLeft: "1px solid #2a2c36",
@@ -102,6 +111,7 @@ export const sheetStyles = {
   hint: { color: "#8a8d9b", fontSize: 12, padding: "0 0 8px" },
   image: { display: "block", imageRendering: "pixelated" },
   inactive: { opacity: 0.3, pointerEvents: "none" },
+  listActions: { alignItems: "center", display: "flex", gap: 8 },
   overlay: { cursor: "crosshair", inset: 0, position: "absolute" },
   panel: {
     borderLeft: "1px solid #2a2c36",

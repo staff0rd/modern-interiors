@@ -6,6 +6,7 @@ import {
   type ManifestEntry,
   type SubSpriteGroup,
 } from "../metadata/schema.ts";
+import { useDebouncedCallback } from "../metadata/useDebouncedCallback.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { defaultCellSize } from "./groupCells.ts";
 import { makeGroupHandlers, type GroupHandlers } from "./groupHandlers.ts";
@@ -44,10 +45,13 @@ export const useSheetGroups = (
   );
   const [showGrid, setShowGrid] = useState(false);
   const [selectedIndex, setSelectedIndex] = useParamSelection(GROUP_PARAM, groups.length);
+  const persist = useDebouncedCallback((next: SubSpriteGroup[]) =>
+    store.setSubSpriteGroups(path, persistable(next)),
+  );
 
   const handlers = makeGroupHandlers({
     groups,
-    persist: (next) => store.setSubSpriteGroups(path, persistable(next)),
+    persist,
     selectedIndex,
     setGroups,
     setSelectedIndex,

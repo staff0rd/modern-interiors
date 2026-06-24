@@ -1,5 +1,6 @@
 import type { GroupTemplate, SubSpriteGroup } from "../metadata/schema.ts";
-import { adjustNames, cellCount, snapRect } from "./groupCells.ts";
+import { adjustNames, cellCount } from "./groupCells.ts";
+import { groupFromTemplate } from "./groupFromTemplate.ts";
 import { tileGroups, type SheetSize } from "./groupTiling.ts";
 import type { Rect } from "./useSheetEditor.ts";
 
@@ -12,6 +13,7 @@ export type GroupHandlers = {
   add: () => void;
   draw: (rect: Rect) => void;
   remove: (index: number) => void;
+  removeAll: () => void;
   select: (index: number) => void;
   setName: (index: number, name: string) => void;
   setDescription: (index: number, description: string) => void;
@@ -41,18 +43,6 @@ const describe = (description: string): string | undefined => {
     return description;
   }
   return undefined;
-};
-
-const groupFromTemplate = (template: GroupTemplate, rect: Rect): SubSpriteGroup => {
-  const snapped = snapRect(rect, template.cellWidth, template.cellHeight);
-  const base: SubSpriteGroup = {
-    cellHeight: template.cellHeight,
-    cellWidth: template.cellWidth,
-    name: "",
-    rect: snapped,
-    variantNames: [],
-  };
-  return { ...base, variantNames: adjustNames(template.variantNames, cellCount(base)) };
 };
 
 const commit = (context: GroupContext, next: SubSpriteGroup[]) => {
@@ -143,6 +133,11 @@ const replaceAt = (names: string[], target: number, value: string): string[] =>
     return existing;
   });
 
+const removeAllGroups = (context: GroupContext) => {
+  commit(context, []);
+  context.setSelectedIndex(NONE);
+};
+
 const mutateHandlers = (context: GroupContext) => ({
   add: () => addDefault(context),
   draw: (rect: Rect) => append(context, rect),
@@ -161,6 +156,7 @@ const navHandlers = (context: GroupContext) => ({
 const templateHandlers = (context: GroupContext) => ({
   applyTemplate: (index: number) => updateAt(context, index, templatePatch(context.template)),
   applyTemplateAll: () => applyTemplateToAll(context),
+  removeAll: () => removeAllGroups(context),
 });
 
 const fieldHandlers = (context: GroupContext) => ({

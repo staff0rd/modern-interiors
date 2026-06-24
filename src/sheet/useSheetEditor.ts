@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { ManifestEntry, SubSprite } from "../metadata/schema.ts";
+import { useDebouncedCallback } from "../metadata/useDebouncedCallback.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { makeSheetHandlers, type SheetHandlers } from "./sheetHandlers.ts";
 import { useParamSelection } from "./useParamSelection.ts";
@@ -33,18 +34,19 @@ const displayScale = (entry: ManifestEntry | undefined): number => {
 };
 
 export const useSheetEditor = (store: MetadataStore, path: string): SheetEditorState => {
-  const { manifest, metadata, setSubSprites: persist } = store;
+  const { manifest, metadata, setSubSprites } = store;
   const entry = manifest?.entries.find((candidate) => candidate.path === path);
   const existing = metadata?.assets[path]?.subSprites;
-  const [subSprites, setSubSprites] = useState<SubSprite[]>(() => existing ?? []);
+  const [subSprites, setSubSpritesState] = useState<SubSprite[]>(() => existing ?? []);
   const [selectedIndex, setSelectedIndex] = useParamSelection(SUB_PARAM, subSprites.length);
+  const persist = useDebouncedCallback((next: SubSprite[]) => setSubSprites(path, next));
 
   const handlers = makeSheetHandlers({
     entry,
-    persist: (next) => persist(path, next),
+    persist,
     selectedIndex,
     setSelectedIndex,
-    setSubSprites,
+    setSubSprites: setSubSpritesState,
     subSprites,
   });
 

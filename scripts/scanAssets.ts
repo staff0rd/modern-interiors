@@ -51,11 +51,13 @@ const toEntry = async (fullPath: string): Promise<ManifestEntry> => {
   const path = relative(assetDir, fullPath).split("\\").join("/");
   const { width, height } = await readDimensions(fullPath);
   const frameSize = parseFrameSize(path);
+  const frameHeight = frameSize?.frameHeight ?? null;
+  const frameWidth = frameSize?.frameWidth ?? null;
   return {
-    frameHeight: frameSize?.frameHeight ?? null,
-    frameWidth: frameSize?.frameWidth ?? null,
+    frameHeight,
+    frameWidth,
     height,
-    kind: inferKind(path),
+    kind: inferKind(path, { frameHeight, frameWidth, height, width }),
     path,
     width,
   };

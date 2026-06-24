@@ -1,7 +1,8 @@
 import { computeCompleteness } from "../metadata/completeness.ts";
 import { KIND_VALUES, type Kind, type Manifest, type Metadata } from "../metadata/schema.ts";
+import { buildVariantIndex } from "../metadata/variantIndex.ts";
 import { variantKey } from "../metadata/variantKey.ts";
-import { buildVariantIndex, resolveMetadata, type MetadataSource } from "../metadata/variants.ts";
+import { resolveMetadata, type MetadataSource } from "../metadata/variants.ts";
 
 export type KindFilter = "all" | Kind;
 export type DoneFilter = "all" | "done" | "incomplete";
@@ -22,7 +23,9 @@ const EMPTY = 0;
 const AFTER_DASH = 1;
 const EXCLUDE_PREFIX = "-";
 
-export const buildRows = (manifest: Manifest, metadata: Metadata): Row[] => {
+const rowsCache = new WeakMap<Manifest, WeakMap<Metadata, Row[]>>();
+
+const computeRows = (manifest: Manifest, metadata: Metadata): Row[] => {
   const index = buildVariantIndex(manifest);
   return manifest.entries.map((entry) => {
     const resolved = resolveMetadata(entry.path, metadata, index);
@@ -30,6 +33,21 @@ export const buildRows = (manifest: Manifest, metadata: Metadata): Row[] => {
     const { done, missing } = computeCompleteness(kind, resolved.meta);
     return { done, entry, kind, missing, source: resolved.source, variantCount: SINGLE_VARIANT };
   });
+};
+
+// Building rows scans the whole pack (tens of thousands of entries), so cache by the
+// Identity of its immutable inputs: the manifest is fixed for the session and metadata
+// Is replaced only on save, so navigating between views reuses the prior result.
+export const buildRows = (manifest: Manifest, metadata: Metadata): Row[] => {
+  const byMetadata = rowsCache.get(manifest) ?? new WeakMap<Metadata, Row[]>();
+  rowsCache.set(manifest, byMetadata);
+  const cached = byMetadata.get(metadata);
+  if (cached) {
+    return cached;
+  }
+  const rows = computeRows(manifest, metadata);
+  byMetadata.set(metadata, rows);
+  return rows;
 };
 
 export const summarize = (rows: Row[]): KindSummary => {

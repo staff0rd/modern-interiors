@@ -4,12 +4,33 @@ import { buildRows, collapseRows, filterRows, type Row, type RowFilters } from "
 
 export type VisibleFilters = RowFilters & { collapse: boolean };
 
-export const filterAndCollapse = (rows: Row[], filters: VisibleFilters): Row[] => {
+const filterCache = new WeakMap<Row[], Map<string, Row[]>>();
+
+const filterKey = (filters: VisibleFilters): string =>
+  `${filters.collapse}|${filters.kindFilter}|${filters.doneFilter}|${filters.query}`;
+
+const applyFilters = (rows: Row[], filters: VisibleFilters): Row[] => {
   const matched = filterRows(rows, filters);
   if (filters.collapse) {
     return collapseRows(matched);
   }
   return matched;
+};
+
+// Filtering + collapsing scans every row, and both the browse list and the editor's
+// Prev/next navigation request it with the same inputs, so cache per row-set identity
+// (rows are themselves cached upstream) keyed by the active filters.
+export const filterAndCollapse = (rows: Row[], filters: VisibleFilters): Row[] => {
+  const byKey = filterCache.get(rows) ?? new Map<string, Row[]>();
+  filterCache.set(rows, byKey);
+  const key = filterKey(filters);
+  const cached = byKey.get(key);
+  if (cached) {
+    return cached;
+  }
+  const result = applyFilters(rows, filters);
+  byKey.set(key, result);
+  return result;
 };
 
 export const visibleRows = (

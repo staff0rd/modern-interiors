@@ -35,7 +35,27 @@ export const parseFrameSize = (relativePath: string): FrameSize => {
   return null;
 };
 
-export const inferKind = (relativePath: string): Kind => {
+const SINGLE_TILE = 1;
+
+export type KindDimensions = {
+  width: number;
+  height: number;
+  frameWidth: number | null;
+  frameHeight: number | null;
+};
+
+// A design/palette image that holds more than one frame is really a tile sheet, not a
+// Single sprite — so the directory guess only wins when we can't see multiple tiles.
+const isMultiTile = (dims: KindDimensions | undefined): boolean => {
+  if (!dims?.frameWidth || !dims?.frameHeight) {
+    return false;
+  }
+  const cols = Math.floor(dims.width / dims.frameWidth);
+  const rows = Math.floor(dims.height / dims.frameHeight);
+  return cols * rows > SINGLE_TILE;
+};
+
+export const inferKind = (relativePath: string, dims?: KindDimensions): Kind => {
   const lower = relativePath.toLowerCase();
   const [topDir = ""] = relativePath.split("/");
 
@@ -47,7 +67,16 @@ export const inferKind = (relativePath: string): Kind => {
     return "animation";
   }
 
-  if (lower.includes("single") || topDir === "6_Home_Designs" || topDir === "Palettes") {
+  // A "single"-named path is the pack author marking one object (which may still span
+  // Several cells, e.g. a 16x32 chair), so it always stays single.
+  if (lower.includes("single")) {
+    return "single";
+  }
+
+  // A whole-design directory is a single arrangement unless the image is plainly a tile
+  // Grid (e.g. a 528x480 layer at a 48x48 frame is 11x10 tiles), which makes it a sheet.
+  const designDir = topDir === "6_Home_Designs" || topDir === "Palettes";
+  if (designDir && !isMultiTile(dims)) {
     return "single";
   }
 

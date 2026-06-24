@@ -1,25 +1,10 @@
-import type { AssetMetadata, Manifest, Metadata, Rect } from "./schema.ts";
-import { variantKey, variantSize } from "./variantKey.ts";
+import type { AssetMetadata, Metadata, Rect } from "./schema.ts";
+import type { VariantIndex } from "./variantIndex.ts";
+import { variantSize } from "./variantKey.ts";
 
 const FALLBACK_RATIO = 1;
 const NO_SIZE = 0;
 const FIRST = 0;
-
-type VariantIndex = { siblings: (path: string) => string[] };
-
-const siblingsLookup =
-  (byKey: Map<string, string[]>) =>
-  (path: string): string[] =>
-    byKey.get(variantKey(path)) ?? [path];
-
-export const buildVariantIndex = (manifest: Manifest): VariantIndex => {
-  const byKey = new Map<string, string[]>();
-  for (const entry of manifest.entries) {
-    const key = variantKey(entry.path);
-    byKey.set(key, [...(byKey.get(key) ?? []), entry.path]);
-  }
-  return { siblings: siblingsLookup(byKey) };
-};
 
 const sizeRatio = (from: string, to: string): number => {
   const fromSize = variantSize(from);
