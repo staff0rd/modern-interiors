@@ -37,9 +37,11 @@ export const BrowseView = ({ store, onEdit }: BrowseViewProps) => {
       <FilterControls
         query={browse.query}
         doneFilter={browse.doneFilter}
+        collapse={browse.collapse}
         shown={browse.filtered.length}
         onQuery={browse.setQuery}
         onDoneFilter={browse.setDoneFilter}
+        onCollapse={browse.setCollapse}
       />
       <VirtualList
         items={browse.filtered}

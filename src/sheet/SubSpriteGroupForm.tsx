@@ -48,7 +48,12 @@ export const SubSpriteGroupForm = ({
           onChange={(event) => onDescription(event.target.value)}
         />
       </label>
-      <RectFields rect={group.rect} onChange={onRect} />
+      <RectFields
+        rect={group.rect}
+        onChange={onRect}
+        stepX={group.cellWidth}
+        stepY={group.cellHeight}
+      />
       <div style={editorStyles.field}>
         <span>
           Cell variants ({cols}×{rows})

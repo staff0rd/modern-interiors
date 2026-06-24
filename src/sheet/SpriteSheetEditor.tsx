@@ -1,6 +1,9 @@
-import { EditorHeader } from "../anim/EditorHeader.tsx";
+import type { ReactNode } from "react";
+
+import type { EditorNav } from "../anim/EditorHeader.tsx";
 import { editorStyles } from "../anim/editorStyles.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
+import { EditorChrome } from "../variants/EditorChrome.tsx";
 import { GroupDetailPanel } from "./GroupDetailPanel.tsx";
 import { snapRect } from "./groupCells.ts";
 import { SheetCanvas } from "./SheetCanvas.tsx";
@@ -15,6 +18,9 @@ type SpriteSheetEditorProps = {
   store: MetadataStore;
   path: string;
   onClose: () => void;
+  nav?: EditorNav;
+  readOnly?: boolean;
+  notice?: ReactNode;
 };
 
 const drawHandlerFor = (mode: SheetMode, view: SheetEditorState, groupState: SheetGroupsState) => {
@@ -39,10 +45,26 @@ const snapFor = (mode: SheetMode, groupState: SheetGroupsState) => {
   return undefined;
 };
 
-export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorProps) => {
+const NO_SUBS = 0;
+
+const defaultMode = (subSpriteCount: number): SheetMode => {
+  if (subSpriteCount > NO_SUBS) {
+    return "sub";
+  }
+  return "group";
+};
+
+export const SpriteSheetEditor = ({
+  store,
+  path,
+  onClose,
+  nav,
+  readOnly,
+  notice,
+}: SpriteSheetEditorProps) => {
   const view = useSheetEditor(store, path);
   const groupState = useSheetGroups(store, path, view.entry);
-  const [mode, setMode] = useSheetMode();
+  const [mode, setMode] = useSheetMode(defaultMode(view.subSprites.length));
   if (!view.entry) {
     return <div style={{ ...editorStyles.page, padding: 20 }}>Asset not found in manifest.</div>;
   }
@@ -50,8 +72,7 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
   const gridCell = gridCellFor(mode, groupState);
   const snap = snapFor(mode, groupState);
   return (
-    <div style={editorStyles.page}>
-      <EditorHeader path={path} onClose={onClose} />
+    <EditorChrome path={path} onClose={onClose} nav={nav} readOnly={readOnly} notice={notice}>
       <div style={sheetStyles.body}>
         <div style={sheetStyles.canvasArea}>
           <SheetCanvas
@@ -81,6 +102,6 @@ export const SpriteSheetEditor = ({ store, path, onClose }: SpriteSheetEditorPro
           saveState={store.saveState}
         />
       </div>
-    </div>
+    </EditorChrome>
   );
 };

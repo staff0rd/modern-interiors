@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, normalize } from "node:path";
 
 import type { Plugin } from "vite";
 
@@ -12,8 +12,10 @@ const MANIFEST_FILE = join(process.cwd(), "metadata", "manifest.json");
 const JSON_INDENT = 2;
 const HTTP_OK = 200;
 const HTTP_BAD_REQUEST = 400;
+const HTTP_NOT_FOUND = 404;
 const HTTP_METHOD_NOT_ALLOWED = 405;
 const HTTP_SERVER_ERROR = 500;
+const PATH_ONLY = 0;
 const WRITE_METHODS = new Set(["POST", "PUT"]);
 
 type Responder = {
@@ -51,6 +53,23 @@ const serveFile = async (res: Responder, file: string, missing: () => void) => {
   }
 };
 
+const notFound = (res: Responder) => {
+  res.statusCode = HTTP_NOT_FOUND;
+  res.end("not found");
+};
+
+// Served via middleware (not Vite's static public dir) so freshly regenerated
+// Files are read from disk per request; public/generated is watch-ignored, so
+// Vite's static index never learns about paths created after server start.
+const serveGenerated = (req: { url?: string }, res: Responder) => {
+  const parts = (req.url ?? "/").split("?");
+  const file = normalize(join(GENERATED_DIR, decodeURIComponent(parts[PATH_ONLY] ?? "/")));
+  if (!file.startsWith(GENERATED_DIR)) {
+    return notFound(res);
+  }
+  return serveFile(res, file, () => notFound(res));
+};
+
 const putMetadata = async (req: Requester, res: Responder) => {
   try {
     const parsed = metadataSchema.parse(JSON.parse(await readBody(req)));
@@ -74,6 +93,8 @@ export const metadataPlugin = (): Plugin => ({
         }),
       ),
     );
+
+    server.middlewares.use("/generated", serveGenerated);
 
     server.middlewares.use("/api/metadata", (req, res) => {
       if (req.method === "GET") {

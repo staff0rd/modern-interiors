@@ -4,16 +4,19 @@ import type { SheetMode } from "./SheetPanel.tsx";
 
 const MODE_PARAM = "mode";
 
-const resolveMode = (value: string | null): SheetMode => {
+const resolveMode = (value: string | null, fallback: SheetMode): SheetMode => {
   if (value === "sub") {
     return "sub";
   }
-  return "group";
+  if (value === "group") {
+    return "group";
+  }
+  return fallback;
 };
 
-export const useSheetMode = (): [SheetMode, (mode: SheetMode) => void] => {
+export const useSheetMode = (fallback: SheetMode): [SheetMode, (mode: SheetMode) => void] => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const mode = resolveMode(searchParams.get(MODE_PARAM));
+  const mode = resolveMode(searchParams.get(MODE_PARAM), fallback);
   const setMode = (next: SheetMode) => {
     setSearchParams(
       (prev) => {

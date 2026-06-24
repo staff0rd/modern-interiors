@@ -1,25 +1,36 @@
 import { computeCompleteness } from "../metadata/completeness.ts";
-import { KIND_VALUES, type Kind, type ManifestEntry, type Metadata } from "../metadata/schema.ts";
+import { KIND_VALUES, type Kind, type Manifest, type Metadata } from "../metadata/schema.ts";
+import { variantKey } from "../metadata/variantKey.ts";
+import { buildVariantIndex, resolveMetadata, type MetadataSource } from "../metadata/variants.ts";
 
 export type KindFilter = "all" | Kind;
 export type DoneFilter = "all" | "done" | "incomplete";
 
 export type Row = {
-  entry: ManifestEntry;
+  entry: Manifest["entries"][number];
   kind: Kind;
   done: boolean;
   missing: string[];
+  variantCount: number;
+  source: MetadataSource;
 };
 
 export type KindSummary = Map<Kind, { total: number; done: number }>;
 
-export const buildRows = (entries: ManifestEntry[], metadata: Metadata): Row[] =>
-  entries.map((entry) => {
-    const meta = metadata.assets[entry.path];
-    const kind = meta?.kind ?? entry.kind;
-    const { done, missing } = computeCompleteness(kind, meta);
-    return { done, entry, kind, missing };
+const SINGLE_VARIANT = 1;
+const EMPTY = 0;
+const AFTER_DASH = 1;
+const EXCLUDE_PREFIX = "-";
+
+export const buildRows = (manifest: Manifest, metadata: Metadata): Row[] => {
+  const index = buildVariantIndex(manifest);
+  return manifest.entries.map((entry) => {
+    const resolved = resolveMetadata(entry.path, metadata, index);
+    const kind = resolved.meta.kind ?? entry.kind;
+    const { done, missing } = computeCompleteness(kind, resolved.meta);
+    return { done, entry, kind, missing, source: resolved.source, variantCount: SINGLE_VARIANT };
   });
+};
 
 export const summarize = (rows: Row[]): KindSummary => {
   const summary: KindSummary = new Map();
@@ -30,14 +41,36 @@ export const summarize = (rows: Row[]): KindSummary => {
   return summary;
 };
 
-type RowFilters = {
+export type RowFilters = {
   query: string;
   kindFilter: KindFilter;
   doneFilter: DoneFilter;
 };
 
+type QueryTerms = { includes: string[]; excludes: string[] };
+
+const parseQuery = (query: string): QueryTerms => {
+  const terms = query
+    .split(",")
+    .map((raw) => raw.trim().toLowerCase())
+    .filter((term) => term.length > EMPTY);
+  const excludes = terms
+    .filter((term) => term.startsWith(EXCLUDE_PREFIX))
+    .map((term) => term.slice(AFTER_DASH).trim())
+    .filter((body) => body.length > EMPTY);
+  const includes = terms.filter((term) => !term.startsWith(EXCLUDE_PREFIX));
+  return { excludes, includes };
+};
+
+const matchesQuery = (path: string, terms: QueryTerms): boolean => {
+  if (terms.excludes.some((term) => path.includes(term))) {
+    return false;
+  }
+  return terms.includes.every((term) => path.includes(term));
+};
+
 export const filterRows = (rows: Row[], filters: RowFilters): Row[] => {
-  const needle = filters.query.trim().toLowerCase();
+  const terms = parseQuery(filters.query);
   return rows.filter((row) => {
     if (filters.kindFilter !== "all" && row.kind !== filters.kindFilter) {
       return false;
@@ -48,9 +81,36 @@ export const filterRows = (rows: Row[], filters: RowFilters): Row[] => {
     if (filters.doneFilter === "incomplete" && row.done) {
       return false;
     }
-    if (needle && !row.entry.path.toLowerCase().includes(needle)) {
-      return false;
-    }
-    return true;
+    return matchesQuery(row.entry.path.toLowerCase(), terms);
   });
+};
+
+const groupByKey = (rows: Row[]): Map<string, Row[]> => {
+  const groups = new Map<string, Row[]>();
+  for (const row of rows) {
+    const key = variantKey(row.entry.path);
+    const bucket = groups.get(key);
+    if (bucket) {
+      bucket.push(row);
+    } else {
+      groups.set(key, [row]);
+    }
+  }
+  return groups;
+};
+
+const largestVariant = (bucket: Row[]): Row =>
+  bucket.reduce((largest, row) => {
+    if (row.entry.width > largest.entry.width) {
+      return row;
+    }
+    return largest;
+  });
+
+export const collapseRows = (rows: Row[]): Row[] => {
+  const collapsed: Row[] = [];
+  for (const bucket of groupByKey(rows).values()) {
+    collapsed.push({ ...largestVariant(bucket), variantCount: bucket.length });
+  }
+  return collapsed;
 };

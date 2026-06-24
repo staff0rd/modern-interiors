@@ -1,5 +1,6 @@
 import { buildByKind, type AtlasFrame, type FrameAnim } from "./generateFrames.ts";
 import type { AssetMetadata, Kind, Manifest, ManifestEntry, Metadata } from "./schema.ts";
+import { buildVariantIndex, resolveMetadata } from "./variants.ts";
 
 const ZERO = 0;
 const ONE = 1;
@@ -97,12 +98,12 @@ const filesFor = (entry: ManifestEntry, meta: AssetMetadata, root: string): Gene
 };
 
 export const generateFiles = (manifest: Manifest, metadata: Metadata): GeneratedFile[] => {
-  const byPath = new Map(manifest.entries.map((entry) => [entry.path, entry]));
+  const index = buildVariantIndex(manifest);
   const files: GeneratedFile[] = [];
-  for (const [path, meta] of Object.entries(metadata.assets)) {
-    const entry = byPath.get(path);
-    if (entry) {
-      files.push(...filesFor(entry, meta, manifest.root));
+  for (const entry of manifest.entries) {
+    const resolved = resolveMetadata(entry.path, metadata, index);
+    if (resolved.source !== "none") {
+      files.push(...filesFor(entry, resolved.meta, manifest.root));
     }
   }
   return files;

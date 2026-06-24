@@ -9,11 +9,49 @@ const frameLabel = (frameWidth: number | null, frameHeight: number | null): stri
   return "";
 };
 
+const SINGLE_VARIANT = 1;
+
+const variantLabel = (variantCount: number): string => {
+  if (variantCount > SINGLE_VARIANT) {
+    return ` · ${variantCount} sizes`;
+  }
+  return "";
+};
+
 const doneLabel = (done: boolean): string => {
   if (done) {
     return "done";
   }
   return "incomplete";
+};
+
+type KindCellProps = {
+  row: Row;
+  onKindChange: (path: string, kind: Kind) => void;
+};
+
+const KindCell = ({ row, onKindChange }: KindCellProps) => {
+  if (row.source === "derived") {
+    return (
+      <span style={{ ...styles.meta, fontStyle: "italic" }} title="Derived from canonical variant">
+        {row.kind} · linked
+      </span>
+    );
+  }
+  return (
+    <select
+      style={styles.select}
+      value={row.kind}
+      onClick={(event) => event.stopPropagation()}
+      onChange={(event) => onKindChange(row.entry.path, event.target.value as Kind)}
+    >
+      {KIND_VALUES.map((kind) => (
+        <option key={kind} value={kind}>
+          {kind}
+        </option>
+      ))}
+    </select>
+  );
 };
 
 type AssetRowProps = {
@@ -34,19 +72,9 @@ export const AssetRow = ({ row, root, onKindChange, onEdit }: AssetRowProps) => 
       <span style={styles.meta}>
         {row.entry.width}×{row.entry.height}
         {frameLabel(row.entry.frameWidth, row.entry.frameHeight)}
+        {variantLabel(row.variantCount)}
       </span>
-      <select
-        style={styles.select}
-        value={row.kind}
-        onClick={(event) => event.stopPropagation()}
-        onChange={(event) => onKindChange(row.entry.path, event.target.value as Kind)}
-      >
-        {KIND_VALUES.map((kind) => (
-          <option key={kind} value={kind}>
-            {kind}
-          </option>
-        ))}
-      </select>
+      <KindCell row={row} onKindChange={onKindChange} />
       <span style={badgeStyle(row.done)} title={row.missing.join(", ")}>
         {doneLabel(row.done)}
       </span>

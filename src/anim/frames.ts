@@ -7,8 +7,7 @@ const DEFAULT_FRAME_RATE = 8;
 const LOOP_FOREVER = -1;
 const INSERT_NO_REMOVE = 0;
 const SLICE_START = 0;
-const TARGET_CELL_PX = 72;
-const MIN_SCALE = 1;
+const STRIP_SCALE = 2;
 const DEFAULT_TILES = 1;
 const NO_ORDINAL = 0;
 const FIRST_ORDINAL = 1;
@@ -79,10 +78,9 @@ export const frameCropStyle = ({ geometry, index, url, scale }: FrameCrop): CSSP
   };
 };
 
-export const stripScale = (geometry: FrameGridGeometry): number => {
-  const longest = Math.max(geometry.frameWidth, geometry.frameHeight);
-  return Math.max(MIN_SCALE, Math.round(TARGET_CELL_PX / longest));
-};
+// A constant zoom (not normalized per asset) so a strip's frame size reflects the
+// Asset's real pixel resolution — the 16/32/48 variants render 1×/2×/3× of each other.
+export const stripScale = (): number => STRIP_SCALE;
 
 export const moveFrames = (order: number[], selected: Set<number>, target: number): number[] => {
   const moved = order.filter((_unused, position) => selected.has(position));

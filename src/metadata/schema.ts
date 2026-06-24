@@ -76,6 +76,7 @@ export type GroupTemplate = z.infer<typeof groupTemplateSchema>;
 const assetMetadataSchema = z.object({
   animations: z.array(animationSchema).optional(),
   description: z.string().optional(),
+  detached: z.boolean().optional(),
   groupTemplate: groupTemplateSchema.optional(),
   kind: kindSchema.optional(),
   orientation: orientationSchema.optional(),

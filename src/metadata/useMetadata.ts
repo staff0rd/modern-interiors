@@ -27,6 +27,7 @@ type AssetSetters = {
   setSubSprites: (path: string, subSprites: SubSprite[]) => void;
   setSubSpriteGroups: (path: string, subSpriteGroups: SubSpriteGroup[]) => void;
   setGroupTemplate: (path: string, groupTemplate: GroupTemplate) => void;
+  detachVariant: (path: string, meta: AssetMetadata) => void;
 };
 
 export type MetadataStore = AssetSetters & {
@@ -38,6 +39,7 @@ export type MetadataStore = AssetSetters & {
 };
 
 const assetSetters = (patchAsset: PatchAsset): AssetSetters => ({
+  detachVariant: (path, meta) => patchAsset(path, { ...meta, detached: true }),
   setAnimations: (path, animations) => patchAsset(path, { animations }),
   setDescription: (path, description) => patchAsset(path, { description }),
   setGroupTemplate: (path, groupTemplate) => patchAsset(path, { groupTemplate }),

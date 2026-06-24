@@ -2,75 +2,75 @@
   "frames": {
     "animated_spider/f0": {
       "frame": {
-        "h": 96,
-        "w": 48,
+        "h": 32,
+        "w": 16,
         "x": 0,
         "y": 0
       }
     },
     "animated_spider/f1": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 48,
+        "h": 32,
+        "w": 16,
+        "x": 16,
         "y": 0
       }
     },
     "animated_spider/f2": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 96,
+        "h": 32,
+        "w": 16,
+        "x": 32,
         "y": 0
       }
     },
     "animated_spider/f3": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 144,
+        "h": 32,
+        "w": 16,
+        "x": 48,
         "y": 0
       }
     },
     "animated_spider/f4": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 192,
+        "h": 32,
+        "w": 16,
+        "x": 64,
         "y": 0
       }
     },
     "animated_spider/f5": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 240,
+        "h": 32,
+        "w": 16,
+        "x": 80,
         "y": 0
       }
     },
     "animated_spider/f6": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 288,
+        "h": 32,
+        "w": 16,
+        "x": 96,
         "y": 0
       }
     },
     "animated_spider/f7": {
       "frame": {
-        "h": 96,
-        "w": 48,
-        "x": 336,
+        "h": 32,
+        "w": 16,
+        "x": 112,
         "y": 0
       }
     }
   },
   "meta": {
-    "image": "/moderninteriors-win/3_Animated_objects/48x48/spritesheets/animated_spider_48x48.png",
+    "image": "/moderninteriors-win/3_Animated_objects/16x16/spritesheets/animated_spider.png",
     "scale": "1",
     "size": {
-      "h": 96,
-      "w": 384
+      "h": 32,
+      "w": 128
     }
   }
 }

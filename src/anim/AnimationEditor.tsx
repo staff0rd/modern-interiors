@@ -1,8 +1,11 @@
+import type { ReactNode } from "react";
+
 import type { MetadataStore } from "../metadata/useMetadata.ts";
+import { EditorChrome } from "../variants/EditorChrome.tsx";
+import type { EditorNav } from "./EditorHeader.tsx";
 import { AnimationControls } from "./AnimationControls.tsx";
 import { AnimationEditorBody } from "./AnimationEditorBody.tsx";
 import { AnimationTabs } from "./AnimationTabs.tsx";
-import { EditorHeader } from "./EditorHeader.tsx";
 import { editorStyles } from "./editorStyles.ts";
 import { useAnimationEditor } from "./useAnimationEditor.ts";
 import { useGeneratedFiles } from "./useGeneratedFiles.ts";
@@ -14,9 +17,19 @@ type AnimationEditorProps = {
   store: MetadataStore;
   path: string;
   onClose: () => void;
+  nav?: EditorNav;
+  readOnly?: boolean;
+  notice?: ReactNode;
 };
 
-export const AnimationEditor = ({ store, path, onClose }: AnimationEditorProps) => {
+export const AnimationEditor = ({
+  store,
+  path,
+  onClose,
+  nav,
+  readOnly,
+  notice,
+}: AnimationEditorProps) => {
   const state = useAnimationEditor(store, path);
   const reloadToken = useReloadToken(store.saveState);
   const files = useGeneratedFiles(path, reloadToken);
@@ -25,8 +38,7 @@ export const AnimationEditor = ({ store, path, onClose }: AnimationEditorProps) 
   }
   const { draft, handlers, animations, activeIndex } = state;
   return (
-    <div style={editorStyles.page}>
-      <EditorHeader path={path} onClose={onClose} />
+    <EditorChrome path={path} onClose={onClose} nav={nav} readOnly={readOnly} notice={notice}>
       <AnimationTabs
         animations={animations}
         activeIndex={activeIndex}
@@ -50,6 +62,6 @@ export const AnimationEditor = ({ store, path, onClose }: AnimationEditorProps) 
         onTileRows={handlers.setTileRows}
       />
       <AnimationEditorBody state={state} files={files} reloadToken={reloadToken} />
-    </div>
+    </EditorChrome>
   );
 };

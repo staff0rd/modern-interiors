@@ -27,7 +27,7 @@ export const FrameSequence = ({
   if (frameOrder.length === EMPTY) {
     return <div style={editorStyles.strip}>No frames — reset to all frames to start over.</div>;
   }
-  const scale = stripScale(geometry);
+  const scale = stripScale();
   const ordinals = playOrdinals(frameOrder, excluded);
   return (
     <div style={editorStyles.strip}>
