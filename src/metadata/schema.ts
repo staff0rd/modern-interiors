@@ -56,7 +56,19 @@ export const subSpriteSchema = z.object({
 });
 export type SubSprite = z.infer<typeof subSpriteSchema>;
 
+export const AUTOTILE_LAYER_VALUES = ["floor", "wall", "shadow"] as const;
+const autotileLayerSchema = z.enum(AUTOTILE_LAYER_VALUES);
+export type AutotileLayer = z.infer<typeof autotileLayerSchema>;
+
+const MASK_MAX = 255;
+const autotileTagSchema = z.object({
+  layer: autotileLayerSchema,
+  mask: z.number().int().nonnegative().max(MASK_MAX),
+});
+export type AutotileTag = z.infer<typeof autotileTagSchema>;
+
 export const subSpriteGroupSchema = z.object({
+  autotiles: z.array(autotileTagSchema.nullable()).optional(),
   cellHeight: z.number().int().positive(),
   cellWidth: z.number().int().positive(),
   description: z.string().optional(),

@@ -1,10 +1,17 @@
-import type { ManifestEntry, Rect, SubSpriteGroup } from "../metadata/schema.ts";
+import type { AutotileTag, ManifestEntry, Rect, SubSpriteGroup } from "../metadata/schema.ts";
 
 const ONE = 1;
 const ZERO = 0;
 const FALLBACK_CELL = 16;
 
-export type Cell = { col: number; index: number; name: string; rect: Rect; row: number };
+export type Cell = {
+  autotile: AutotileTag | null;
+  col: number;
+  index: number;
+  name: string;
+  rect: Rect;
+  row: number;
+};
 
 export const gridDims = (group: SubSpriteGroup): { cols: number; rows: number } => ({
   cols: Math.max(ONE, Math.floor(group.rect.width / group.cellWidth)),
@@ -23,6 +30,7 @@ export const groupCells = (group: SubSpriteGroup): Cell[] => {
     for (let col = ZERO; col < cols; col += ONE) {
       const index = row * cols + col;
       cells.push({
+        autotile: group.autotiles?.[index] ?? null,
         col,
         index,
         name: group.variantNames[index] ?? "",

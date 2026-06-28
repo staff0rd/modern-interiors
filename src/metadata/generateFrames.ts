@@ -1,20 +1,19 @@
 import { geometryFor, type FrameGridGeometry } from "../anim/frames.ts";
 import { groupCells } from "../sheet/groupCells.ts";
-import type { Animation, AssetMetadata, Kind, ManifestEntry, SubSpriteGroup } from "./schema.ts";
+import { addFrame, type AtlasFrame, type FrameRect, hasText, NAME_SEP } from "./atlasFrame.ts";
+import type {
+  Animation,
+  AssetMetadata,
+  AutotileTag,
+  Kind,
+  ManifestEntry,
+  SubSpriteGroup,
+} from "./schema.ts";
 
 const DEFAULT_TILES = 1;
 const EMPTY = 0;
 const ORIGIN = 0;
-const NAME_SEP = "/";
 const SINGLE_FRAME = "sprite";
-
-export type AtlasFrame = {
-  name: string;
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-};
 
 export type FrameAnim = {
   key: string;
@@ -25,22 +24,6 @@ export type FrameAnim = {
 };
 
 export type Built = { anims: FrameAnim[]; frames: AtlasFrame[] };
-
-type FrameRect = { height: number; left: number; top: number; width: number };
-
-const hasText = (value: string | undefined): boolean => (value?.trim().length ?? EMPTY) > EMPTY;
-
-const addFrame = (frames: Map<string, AtlasFrame>, name: string, rect: FrameRect): void => {
-  if (!frames.has(name)) {
-    frames.set(name, {
-      height: rect.height,
-      left: rect.left,
-      name,
-      top: rect.top,
-      width: rect.width,
-    });
-  }
-};
 
 const animFrameName = (animationName: string, index: number): string =>
   `${animationName}${NAME_SEP}f${index}`;
@@ -113,10 +96,15 @@ const buildSingleFrame = (
   return true;
 };
 
+const autotileFrameName = (tag: AutotileTag): string => `${tag.layer}${NAME_SEP}${tag.mask}`;
+
 const addGroupFrames = (group: SubSpriteGroup, frames: Map<string, AtlasFrame>): void => {
   for (const cell of groupCells(group)) {
     if (hasText(cell.name)) {
       addFrame(frames, `${group.name}${NAME_SEP}${cell.name}`, cell.rect);
+    }
+    if (cell.autotile) {
+      addFrame(frames, `${group.name}${NAME_SEP}${autotileFrameName(cell.autotile)}`, cell.rect);
     }
   }
 };

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { AssetRow } from "./AssetRow.tsx";
 import { ROW_HEIGHT, styles } from "./browseStyles.ts";
@@ -27,6 +29,11 @@ export const BrowseView = ({ store, onEdit }: BrowseViewProps) => {
 
   return (
     <div style={styles.page}>
+      <div style={{ ...styles.bar, justifyContent: "flex-end" }}>
+        <Link to="/generate" style={{ color: "#8ad0ff" }}>
+          Room generator →
+        </Link>
+      </div>
       <KindChips
         total={browse.manifest.entries.length}
         summary={browse.summary}

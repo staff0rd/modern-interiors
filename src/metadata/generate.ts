@@ -1,4 +1,5 @@
-import { buildByKind, type AtlasFrame, type FrameAnim } from "./generateFrames.ts";
+import type { AtlasFrame } from "./atlasFrame.ts";
+import { buildByKind, type FrameAnim } from "./generateFrames.ts";
 import type { AssetMetadata, Kind, Manifest, ManifestEntry, Metadata } from "./schema.ts";
 import { buildVariantIndex } from "./variantIndex.ts";
 import { resolveMetadata } from "./variants.ts";
