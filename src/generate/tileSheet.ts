@@ -1,10 +1,9 @@
 import type { CSSProperties } from "react";
 
-import type { AutotileTag, Manifest, Metadata, Rect, SubSpriteGroup } from "../metadata/schema.ts";
+import type { Manifest, Metadata, Rect, SubSpriteGroup } from "../metadata/schema.ts";
 import { GROUP_INDEX, WALLS_PATH, WALLS_URL } from "./tileset.ts";
 
 const ZERO = 0;
-const ONE = 1;
 
 export type SheetSize = { width: number; height: number };
 
@@ -25,26 +24,3 @@ export const cropStyle = (rect: Rect, sheet: SheetSize, scale: number): CSSPrope
   imageRendering: "pixelated",
   width: rect.width * scale,
 });
-
-export const withAutotile = (
-  groups: SubSpriteGroup[],
-  cellIndex: number,
-  tag: AutotileTag | null,
-): SubSpriteGroup[] =>
-  groups.map((group, index) => {
-    if (index !== GROUP_INDEX) {
-      return group;
-    }
-    const length = Math.max(
-      group.variantNames.length,
-      group.autotiles?.length ?? ZERO,
-      cellIndex + ONE,
-    );
-    const autotiles = Array.from({ length }, (_unused, slot) => {
-      if (slot === cellIndex) {
-        return tag;
-      }
-      return group.autotiles?.[slot] ?? null;
-    });
-    return { ...group, autotiles };
-  });

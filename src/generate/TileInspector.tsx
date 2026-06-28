@@ -1,10 +1,9 @@
-import type { AutotileTag } from "../metadata/schema.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { groupCells, type Cell } from "../sheet/groupCells.ts";
-import { AutotileForm } from "./AutotileForm.tsx";
+import { PaintPanel } from "./PaintPanel.tsx";
 import { columns, styles, swatchStyle } from "./generateStyles.ts";
-import { cropStyle, sheetSize, wallGroup, withAutotile, type SheetSize } from "./tileSheet.ts";
-import { GROUP_INDEX, GROUP_TILE_COLS, WALLS_PATH } from "./tileset.ts";
+import { cropStyle, sheetSize, wallGroup, type SheetSize } from "./tileSheet.ts";
+import { GROUP_INDEX, GROUP_TILE_COLS } from "./tileset.ts";
 
 const FIRST = 0;
 const PALETTE_SCALE = 3;
@@ -30,19 +29,17 @@ type InspectorProps = {
   store: MetadataStore;
   selected: number;
   onSelect: (index: number) => void;
+  onClear: () => void;
 };
 
-export const TileInspector = ({ store, selected, onSelect }: InspectorProps) => {
+export const TileInspector = ({ store, selected, onSelect, onClear }: InspectorProps) => {
   const group = wallGroup(store.metadata);
   if (!group) {
     return <div style={styles.inspector}>Loading tiles…</div>;
   }
-  const groups = store.metadata?.assets[WALLS_PATH]?.subSpriteGroups ?? [];
   const sheet = sheetSize(store.manifest);
   const cells = groupCells(group);
   const current = cells[selected] ?? cells[FIRST];
-  const onAutotile = (tag: AutotileTag | null) =>
-    store.setSubSpriteGroups(WALLS_PATH, withAutotile(groups, selected, tag));
   return (
     <div style={styles.inspector}>
       <strong>group-{GROUP_INDEX} tiles</strong>
@@ -57,7 +54,7 @@ export const TileInspector = ({ store, selected, onSelect }: InspectorProps) => 
           />
         ))}
       </div>
-      {current && <AutotileForm cell={current} sheet={sheet} onAutotile={onAutotile} />}
+      {current && <PaintPanel cell={current} sheet={sheet} onClear={onClear} />}
     </div>
   );
 };

@@ -7,7 +7,7 @@ const ZERO = 0;
 const HALF = 2;
 const MIN_SCALE = 1;
 
-export const WALL_MISS = -1;
+export const CELL_MISS = -1;
 
 export const fitScale = (size: Phaser.Structs.Size, width: number, height: number): number => {
   const fit = Math.min(size.width / width, size.height / height);
@@ -27,18 +27,14 @@ const colRowAt = (root: Phaser.GameObjects.Container, pointer: Phaser.Input.Poin
 const inBounds = (grid: Grid, col: number, row: number): boolean =>
   col >= ZERO && row >= ZERO && col < grid.cols && row < grid.rows;
 
-export const wallCellAt = (
+export const cellAt = (
   root: Phaser.GameObjects.Container,
   grid: Grid,
   pointer: Phaser.Input.Pointer,
 ): number => {
   const { col, row } = colRowAt(root, pointer);
   if (!inBounds(grid, col, row)) {
-    return WALL_MISS;
+    return CELL_MISS;
   }
-  const at = row * grid.cols + col;
-  if (!grid.wall[at]) {
-    return WALL_MISS;
-  }
-  return at;
+  return row * grid.cols + col;
 };

@@ -1,27 +1,29 @@
 import type Phaser from "phaser";
 
 import type { Grid } from "./layout.ts";
+import { REGION_INTERIOR, REGION_WALKWAY, REGION_WALL, type Region } from "./regions.ts";
 import { TILE } from "./tileset.ts";
 
-const SOLID = 1;
-const ROOM_ALPHA = 0.35;
-const ROOM_BORDER = 2;
-const BLUE = 0x5b8cff;
-const ORANGE = 0xff8a5b;
-const GREEN = 0x5bffa0;
-const PINK = 0xff5bd0;
-const YELLOW = 0xffd54a;
-const PURPLE = 0x8a5bff;
-const ROOM_COLORS = [BLUE, ORANGE, GREEN, PINK, YELLOW, PURPLE];
+const FILL_ALPHA = 0.4;
+const INTERIOR_COLOR = 0x5b8cff;
+const WALL_COLOR = 0xff8a5b;
+const WALKWAY_COLOR = 0x5bffa0;
+
+const REGION_COLOR = new Map<Region, number>([
+  [REGION_INTERIOR, INTERIOR_COLOR],
+  [REGION_WALL, WALL_COLOR],
+  [REGION_WALKWAY, WALKWAY_COLOR],
+]);
 
 export const roomOverlay = (scene: Phaser.Scene, grid: Grid): Phaser.GameObjects.Graphics => {
   const graphics = scene.add.graphics();
-  grid.rooms.forEach((room, index) => {
-    const color = ROOM_COLORS[index % ROOM_COLORS.length] ?? BLUE;
-    graphics.fillStyle(color, ROOM_ALPHA);
-    graphics.lineStyle(ROOM_BORDER, color, SOLID);
-    graphics.fillRect(room.left * TILE, room.top * TILE, room.width * TILE, room.height * TILE);
-    graphics.strokeRect(room.left * TILE, room.top * TILE, room.width * TILE, room.height * TILE);
+  grid.region.forEach((region, at) => {
+    const color = REGION_COLOR.get(region);
+    if (color === undefined) {
+      return;
+    }
+    graphics.fillStyle(color, FILL_ALPHA);
+    graphics.fillRect((at % grid.cols) * TILE, Math.floor(at / grid.cols) * TILE, TILE, TILE);
   });
   return graphics;
 };

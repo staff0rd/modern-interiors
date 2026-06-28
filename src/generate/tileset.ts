@@ -24,12 +24,21 @@ export type Cell = { col: number; row: number };
 export const wallFrame = (cell: Cell): number =>
   (GROUP_ROW + cell.row) * WALLS_COLS + (GROUP_COL + cell.col);
 
+export const paletteCell = (index: number): Cell => ({
+  col: index % GROUP_TILE_COLS,
+  row: Math.floor(index / GROUP_TILE_COLS),
+});
+
 const FLOOR_COL = 5;
 const FLOOR_ROW = 3;
 
 const floorFrame = (col: number, row: number): number => row * FLOORS_COLS + col;
 
 export const FLOOR_CELL = floorFrame(FLOOR_COL, FLOOR_ROW);
+
+export const WALL_LAYER: AutotileLayer = "wall";
+
+export type PaintMap = Record<number, number>;
 
 export type AutotileLookup = Map<string, Cell>;
 

@@ -56,7 +56,7 @@ export const subSpriteSchema = z.object({
 });
 export type SubSprite = z.infer<typeof subSpriteSchema>;
 
-export const AUTOTILE_LAYER_VALUES = ["floor", "wall", "shadow"] as const;
+const AUTOTILE_LAYER_VALUES = ["floor", "wall", "shadow"] as const;
 const autotileLayerSchema = z.enum(AUTOTILE_LAYER_VALUES);
 export type AutotileLayer = z.infer<typeof autotileLayerSchema>;
 

@@ -11,6 +11,12 @@ export const styles = {
     gap: 12,
     padding: "8px 14px",
   },
+  binding: {
+    alignItems: "flex-start",
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
   body: { display: "flex", flex: 1, minHeight: 0 },
   button: {
     background: "#243049",
@@ -43,20 +49,6 @@ export const styles = {
   },
   link: { color: "#8ad0ff" },
   meta: { color: "#8a8d9b", fontSize: 11 },
-  neighbour: {
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "column",
-    fontSize: 10,
-    gap: 2,
-  },
-  neighbours: {
-    alignItems: "center",
-    display: "grid",
-    gap: 4,
-    gridTemplateColumns: "repeat(3, 1fr)",
-    justifyItems: "center",
-  },
   page: { display: "flex", flexDirection: "column", height: "100%" },
   palette: { display: "grid", gap: 2 },
   swatch: {
@@ -66,15 +58,6 @@ export const styles = {
     padding: 0,
   },
   swatchActive: { border: "1px solid #5b8cff" },
-  tagInput: {
-    background: "#1d1f27",
-    border: "1px solid #2a2c36",
-    borderRadius: 6,
-    color: "#e8e8ef",
-    padding: "6px 8px",
-    width: "100%",
-  },
-  zoom: { background: "#0d0e12", border: "1px solid #2a2c36", borderRadius: 4 },
 } satisfies Record<string, CSSProperties>;
 
 export const swatchStyle = (active: boolean): CSSProperties => {

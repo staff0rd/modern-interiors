@@ -2,15 +2,18 @@ import Phaser from "phaser";
 
 import { buildGrid, type Grid } from "./layout.ts";
 import { roomOverlay } from "./roomOverlay.ts";
-import { center, fitScale, WALL_MISS, wallCellAt } from "./sceneLayout.ts";
+import { cellAt, CELL_MISS, center, fitScale } from "./sceneLayout.ts";
 import {
   autotileKey,
   type AutotileLookup,
+  type Cell,
   FLOOR_CELL,
   FLOORS_KEY,
   FLOORS_URL,
-  GROUP_TILE_COLS,
+  type PaintMap,
+  paletteCell,
   TILE,
+  WALL_LAYER,
   wallFrame,
   WALLS_KEY,
   WALLS_URL,
@@ -18,18 +21,20 @@ import {
 
 const ZERO = 0;
 const ONE = 1;
-const WALL_LAYER = "wall";
+const PLACEHOLDER_COLOR = 0x39405a;
+const PLACEHOLDER_ALPHA = 0.85;
 
 export type SceneConfig = {
   seed: number;
   cols: number;
   rows: number;
   lookup: AutotileLookup;
+  paint: PaintMap;
   showTiles: boolean;
   showRooms: boolean;
 };
 
-export type PickHandler = (groupCellIndex: number) => void;
+export type PickHandler = (at: number) => void;
 
 type Point = { px: number; py: number };
 
@@ -94,15 +99,11 @@ export class GenerateScene extends Phaser.Scene {
     if (!this.root || !this.grid) {
       return;
     }
-    const at = wallCellAt(this.root, this.grid, pointer);
-    if (at === WALL_MISS) {
+    const at = cellAt(this.root, this.grid, pointer);
+    if (at === CELL_MISS) {
       return;
     }
-    const cell = this.config.lookup.get(autotileKey(WALL_LAYER, this.grid.mask[at] ?? ZERO));
-    if (!cell) {
-      return;
-    }
-    this.onPick(cell.row * GROUP_TILE_COLS + cell.col);
+    this.onPick(at);
   }
 
   private drawBuilding(grid: Grid) {
@@ -120,14 +121,31 @@ export class GenerateScene extends Phaser.Scene {
     if (!grid.wall[at]) {
       return;
     }
-    const cell = this.config.lookup.get(autotileKey(WALL_LAYER, grid.mask[at] ?? ZERO));
+    const cell = this.wallCellFor(grid, at);
     if (cell) {
       this.place(WALLS_KEY, wallFrame(cell), point);
+      return;
     }
+    this.placeholder(point);
+  }
+
+  private wallCellFor(grid: Grid, at: number): Cell | undefined {
+    const painted = this.config.paint[at];
+    if (painted !== undefined) {
+      return paletteCell(painted);
+    }
+    return this.config.lookup.get(autotileKey(WALL_LAYER, grid.mask[at] ?? ZERO));
   }
 
   private place(key: string, frame: number, point: Point) {
     this.root?.add(this.add.image(point.px, point.py, key, frame).setOrigin(ZERO));
+  }
+
+  private placeholder(point: Point) {
+    const rect = this.add
+      .rectangle(point.px, point.py, TILE, TILE, PLACEHOLDER_COLOR, PLACEHOLDER_ALPHA)
+      .setOrigin(ZERO);
+    this.root?.add(rect);
   }
 
   private layout(size: Phaser.Structs.Size) {
