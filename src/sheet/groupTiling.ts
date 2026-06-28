@@ -8,7 +8,6 @@ export type SheetSize = { width: number; height: number };
 
 type TilePlan = {
   across: number;
-  down: number;
   blockWidth: number;
   blockHeight: number;
   sourceIndex: number;
@@ -16,22 +15,33 @@ type TilePlan = {
   variantNames: string[];
 };
 
-const tilePlan = (source: SubSpriteGroup, sheet: SheetSize): TilePlan => {
+type BlockGrid = { across: number; down: number; blockWidth: number; blockHeight: number };
+
+const blockGrid = (source: SubSpriteGroup, sheet: SheetSize): BlockGrid => {
   const { cols, rows } = gridDims(source);
   const blockWidth = cols * source.cellWidth;
   const blockHeight = rows * source.cellHeight;
-  const across = Math.max(ONE, Math.floor(sheet.width / blockWidth));
-  const down = Math.max(ONE, Math.floor(sheet.height / blockHeight));
+  return {
+    across: Math.max(ONE, Math.floor(sheet.width / blockWidth)),
+    blockHeight,
+    blockWidth,
+    down: Math.max(ONE, Math.floor(sheet.height / blockHeight)),
+  };
+};
+
+const tilePlan = (source: SubSpriteGroup, sheet: SheetSize, count: number): TilePlan => {
+  const { cols, rows } = gridDims(source);
+  const { across, blockWidth, blockHeight } = blockGrid(source, sheet);
   const sourceCol = Math.floor(source.rect.left / blockWidth);
   const sourceRow = Math.floor(source.rect.top / blockHeight);
-  const keepSource = source.name.length > ZERO && sourceCol < across && sourceRow < down;
+  const sourceIndex = sourceRow * across + sourceCol;
+  const keepSource = source.name.length > ZERO && sourceCol < across && sourceIndex < count;
   return {
     across,
     blockHeight,
     blockWidth,
-    down,
     keepSource,
-    sourceIndex: sourceRow * across + sourceCol,
+    sourceIndex,
     variantNames: adjustNames(source.variantNames, cols * rows),
   };
 };
@@ -76,8 +86,17 @@ const tileBlock = (source: SubSpriteGroup, plan: TilePlan, index: number): SubSp
   };
 };
 
-export const tileGroups = (source: SubSpriteGroup, sheet: SheetSize): SubSpriteGroup[] => {
-  const plan = tilePlan(source, sheet);
-  const count = plan.across * plan.down;
-  return Array.from({ length: count }, (_unused, index) => tileBlock(source, plan, index));
+export const fullSheetTileCount = (source: SubSpriteGroup, sheet: SheetSize): number => {
+  const { across, down } = blockGrid(source, sheet);
+  return across * down;
+};
+
+export const tileGroups = (
+  source: SubSpriteGroup,
+  sheet: SheetSize,
+  count: number,
+): SubSpriteGroup[] => {
+  const safeCount = Math.max(ONE, Math.floor(count));
+  const plan = tilePlan(source, sheet, safeCount);
+  return Array.from({ length: safeCount }, (_unused, index) => tileBlock(source, plan, index));
 };

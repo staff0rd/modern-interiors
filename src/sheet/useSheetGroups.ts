@@ -10,6 +10,7 @@ import { useDebouncedCallback } from "../metadata/useDebouncedCallback.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { defaultCellSize } from "./groupCells.ts";
 import { makeGroupHandlers, type GroupHandlers } from "./groupHandlers.ts";
+import type { SheetSize } from "./groupTiling.ts";
 import { useParamSelection } from "./useParamSelection.ts";
 
 const ZERO = 0;
@@ -18,6 +19,7 @@ const GROUP_PARAM = "group";
 export type SheetGroupsState = {
   groups: SubSpriteGroup[];
   selectedIndex: number;
+  sheet: SheetSize;
   template: GroupTemplate;
   setTemplate: (template: GroupTemplate) => void;
   showGrid: boolean;
@@ -48,6 +50,7 @@ export const useSheetGroups = (
   const persist = useDebouncedCallback((next: SubSpriteGroup[]) =>
     store.setSubSpriteGroups(path, persistable(next)),
   );
+  const sheet: SheetSize = { height: entry?.height ?? ZERO, width: entry?.width ?? ZERO };
 
   const handlers = makeGroupHandlers({
     groups,
@@ -55,7 +58,7 @@ export const useSheetGroups = (
     selectedIndex,
     setGroups,
     setSelectedIndex,
-    sheet: { height: entry?.height ?? ZERO, width: entry?.width ?? ZERO },
+    sheet,
     template,
   });
 
@@ -68,6 +71,7 @@ export const useSheetGroups = (
       setTemplateState(next);
       store.setGroupTemplate(path, next);
     },
+    sheet,
     showGrid,
     template,
   };

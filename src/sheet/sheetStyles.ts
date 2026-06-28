@@ -177,6 +177,7 @@ export const sheetStyles = {
     padding: "3px 8px",
   },
   rowActive: { border: "1px solid #5b8cff" },
+  rowCount: { flexShrink: 0 },
   rowName: {
     flex: 1,
     fontSize: 13,

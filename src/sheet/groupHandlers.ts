@@ -21,7 +21,7 @@ export type GroupHandlers = {
   setVariant: (index: number, cell: number, name: string) => void;
   applyTemplate: (index: number) => void;
   applyTemplateAll: () => void;
-  tile: (index: number) => void;
+  tile: (index: number, count: number) => void;
   toggle: (index: number) => void;
   deselect: () => void;
   prev: () => void;
@@ -116,12 +116,12 @@ const toggleAt = (context: GroupContext, index: number) => {
   context.setSelectedIndex(index);
 };
 
-const tileFrom = (context: GroupContext, index: number) => {
+const tileFrom = (context: GroupContext, index: number, count: number) => {
   const source = context.groups[index];
   if (!source) {
     return;
   }
-  commit(context, tileGroups(source, context.sheet));
+  commit(context, tileGroups(source, context.sheet, count));
   context.setSelectedIndex(NONE);
 };
 
@@ -142,7 +142,7 @@ const mutateHandlers = (context: GroupContext) => ({
   add: () => addDefault(context),
   draw: (rect: Rect) => append(context, rect),
   remove: (index: number) => removeAt(context, index),
-  tile: (index: number) => tileFrom(context, index),
+  tile: (index: number, count: number) => tileFrom(context, index, count),
 });
 
 const navHandlers = (context: GroupContext) => ({

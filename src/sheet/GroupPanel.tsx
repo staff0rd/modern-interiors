@@ -11,7 +11,7 @@ type GroupPanelProps = {
 };
 
 export const GroupPanel = ({ groupState }: GroupPanelProps) => {
-  const { groups, selectedIndex, template, setTemplate, showGrid, setShowGrid, handlers } =
+  const { groups, selectedIndex, sheet, template, setTemplate, showGrid, setShowGrid, handlers } =
     groupState;
   const selected = groups[selectedIndex];
   return (
@@ -29,6 +29,7 @@ export const GroupPanel = ({ groupState }: GroupPanelProps) => {
       )}
       <GroupList
         groups={groups}
+        sheet={sheet}
         selectedIndex={selectedIndex}
         onSelect={handlers.select}
         onAdd={handlers.add}
