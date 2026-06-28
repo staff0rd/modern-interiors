@@ -121,7 +121,7 @@ const tileFrom = (context: GroupContext, index: number, count: number) => {
   if (!source) {
     return;
   }
-  commit(context, tileGroups(source, context.sheet, count));
+  commit(context, [...context.groups, ...tileGroups(source, context.sheet, count)]);
   context.setSelectedIndex(NONE);
 };
 

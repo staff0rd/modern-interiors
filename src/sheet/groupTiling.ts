@@ -2,18 +2,8 @@ import type { SubSpriteGroup } from "../metadata/schema.ts";
 import { adjustNames, gridDims } from "./groupCells.ts";
 
 const ONE = 1;
-const ZERO = 0;
 
 export type SheetSize = { width: number; height: number };
-
-type TilePlan = {
-  across: number;
-  blockWidth: number;
-  blockHeight: number;
-  sourceIndex: number;
-  keepSource: boolean;
-  variantNames: string[];
-};
 
 type BlockGrid = { across: number; down: number; blockWidth: number; blockHeight: number };
 
@@ -29,66 +19,34 @@ const blockGrid = (source: SubSpriteGroup, sheet: SheetSize): BlockGrid => {
   };
 };
 
-const tilePlan = (source: SubSpriteGroup, sheet: SheetSize, count: number): TilePlan => {
+const sourceSlot = (source: SubSpriteGroup, grid: BlockGrid): number => {
+  const col = Math.floor(source.rect.left / grid.blockWidth);
+  const row = Math.floor(source.rect.top / grid.blockHeight);
+  return row * grid.across + col;
+};
+
+const tileBlock = (source: SubSpriteGroup, grid: BlockGrid, slot: number): SubSpriteGroup => {
+  const col = slot % grid.across;
+  const row = Math.floor(slot / grid.across);
   const { cols, rows } = gridDims(source);
-  const { across, blockWidth, blockHeight } = blockGrid(source, sheet);
-  const sourceCol = Math.floor(source.rect.left / blockWidth);
-  const sourceRow = Math.floor(source.rect.top / blockHeight);
-  const sourceIndex = sourceRow * across + sourceCol;
-  const keepSource = source.name.length > ZERO && sourceCol < across && sourceIndex < count;
   return {
-    across,
-    blockHeight,
-    blockWidth,
-    keepSource,
-    sourceIndex,
+    cellHeight: source.cellHeight,
+    cellWidth: source.cellWidth,
+    description: undefined,
+    name: `group-${slot}`,
+    rect: {
+      height: grid.blockHeight,
+      left: col * grid.blockWidth,
+      top: row * grid.blockHeight,
+      width: grid.blockWidth,
+    },
     variantNames: adjustNames(source.variantNames, cols * rows),
   };
 };
 
-const tileName = (isSource: boolean, source: SubSpriteGroup, placeholder: number): string => {
-  if (isSource) {
-    return source.name;
-  }
-  return `group-${placeholder}`;
-};
-
-const tileDescription = (isSource: boolean, source: SubSpriteGroup): string | undefined => {
-  if (isSource) {
-    return source.description;
-  }
-  return undefined;
-};
-
-const placeholderNumber = (index: number, plan: TilePlan): number => {
-  if (plan.keepSource && index > plan.sourceIndex) {
-    return index - ONE;
-  }
-  return index;
-};
-
-const tileBlock = (source: SubSpriteGroup, plan: TilePlan, index: number): SubSpriteGroup => {
-  const col = index % plan.across;
-  const row = Math.floor(index / plan.across);
-  const isSource = plan.keepSource && index === plan.sourceIndex;
-  return {
-    cellHeight: source.cellHeight,
-    cellWidth: source.cellWidth,
-    description: tileDescription(isSource, source),
-    name: tileName(isSource, source, placeholderNumber(index, plan)),
-    rect: {
-      height: plan.blockHeight,
-      left: col * plan.blockWidth,
-      top: row * plan.blockHeight,
-      width: plan.blockWidth,
-    },
-    variantNames: [...plan.variantNames],
-  };
-};
-
-export const fullSheetTileCount = (source: SubSpriteGroup, sheet: SheetSize): number => {
-  const { across, down } = blockGrid(source, sheet);
-  return across * down;
+export const remainingTileCount = (source: SubSpriteGroup, sheet: SheetSize): number => {
+  const grid = blockGrid(source, sheet);
+  return Math.max(ONE, grid.across * grid.down - sourceSlot(source, grid) - ONE);
 };
 
 export const tileGroups = (
@@ -97,6 +55,9 @@ export const tileGroups = (
   count: number,
 ): SubSpriteGroup[] => {
   const safeCount = Math.max(ONE, Math.floor(count));
-  const plan = tilePlan(source, sheet, safeCount);
-  return Array.from({ length: safeCount }, (_unused, index) => tileBlock(source, plan, index));
+  const grid = blockGrid(source, sheet);
+  const start = sourceSlot(source, grid) + ONE;
+  return Array.from({ length: safeCount }, (_unused, index) =>
+    tileBlock(source, grid, start + index),
+  );
 };
