@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { ItchioLink } from "../browse/ItchioLink.tsx";
 import { backButtonStyle, editorStyles } from "./editorStyles.ts";
 
 const pathStyle: CSSProperties = { color: "#cfd2dc", fontFamily: "monospace", fontSize: 12 };
@@ -37,5 +38,8 @@ export const EditorHeader = ({ path, onClose, nav }: EditorHeaderProps) => (
       Next ›
     </button>
     <span style={pathStyle}>{path}</span>
+    <span style={{ marginLeft: "auto" }}>
+      <ItchioLink />
+    </span>
   </div>
 );
