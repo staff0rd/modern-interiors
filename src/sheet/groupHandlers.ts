@@ -1,13 +1,22 @@
-import type { GroupTemplate, SubSpriteGroup } from "../metadata/schema.ts";
-import { adjustNames, cellCount } from "./groupCells.ts";
-import { groupFromTemplate } from "./groupFromTemplate.ts";
-import { tileGroups, type SheetSize } from "./groupTiling.ts";
+import {
+  addDefault,
+  append,
+  applyTemplateToAll,
+  describe,
+  NONE,
+  removeAllGroups,
+  removeAt,
+  replaceAt,
+  STEP,
+  stepSelection,
+  stepTileSelection,
+  templatePatch,
+  tileFrom,
+  toggleAt,
+  updateAt,
+  type GroupContext,
+} from "./groupMutations.ts";
 import type { Rect } from "./useSheetEditor.ts";
-
-const NONE = -1;
-const ONE_CELL = 1;
-const ORIGIN = 0;
-const STEP = 1;
 
 export type GroupHandlers = {
   add: () => void;
@@ -26,116 +35,10 @@ export type GroupHandlers = {
   deselect: () => void;
   prev: () => void;
   next: () => void;
-};
-
-export type GroupContext = {
-  groups: SubSpriteGroup[];
-  template: GroupTemplate;
-  sheet: SheetSize;
-  selectedIndex: number;
-  setGroups: (groups: SubSpriteGroup[]) => void;
-  setSelectedIndex: (index: number) => void;
-  persist: (groups: SubSpriteGroup[]) => void;
-};
-
-const describe = (description: string): string | undefined => {
-  if (description.trim().length > ORIGIN) {
-    return description;
-  }
-  return undefined;
-};
-
-const commit = (context: GroupContext, next: SubSpriteGroup[]) => {
-  context.setGroups(next);
-  context.persist(next);
-};
-
-const append = (context: GroupContext, rect: Rect) => {
-  commit(context, [...context.groups, groupFromTemplate(context.template, rect)]);
-  context.setSelectedIndex(context.groups.length);
-};
-
-const updateAt = (context: GroupContext, index: number, patch: Partial<SubSpriteGroup>) =>
-  commit(
-    context,
-    context.groups.map((group, at) => {
-      if (at !== index) {
-        return group;
-      }
-      const next = { ...group, ...patch };
-      return { ...next, variantNames: adjustNames(next.variantNames, cellCount(next)) };
-    }),
-  );
-
-const addDefault = (context: GroupContext) => {
-  const count = Math.max(ONE_CELL, context.template.variantNames.length);
-  append(context, {
-    height: context.template.cellHeight,
-    left: ORIGIN,
-    top: ORIGIN,
-    width: context.template.cellWidth * count,
-  });
-};
-
-const removeAt = (context: GroupContext, index: number) => {
-  commit(
-    context,
-    context.groups.filter((_unused, at) => at !== index),
-  );
-  context.setSelectedIndex(NONE);
-};
-
-const templatePatch = (template: GroupTemplate): Partial<SubSpriteGroup> => ({
-  cellHeight: template.cellHeight,
-  cellWidth: template.cellWidth,
-  variantNames: template.variantNames,
-});
-
-const applyTemplateToAll = (context: GroupContext) =>
-  commit(
-    context,
-    context.groups.map((group) => {
-      const next = { ...group, ...templatePatch(context.template) };
-      return { ...next, variantNames: adjustNames(next.variantNames, cellCount(next)) };
-    }),
-  );
-
-const stepSelection = (context: GroupContext, delta: number) => {
-  const count = context.groups.length;
-  if (count === ORIGIN) {
-    return;
-  }
-  context.setSelectedIndex((context.selectedIndex + delta + count) % count);
-};
-
-const toggleAt = (context: GroupContext, index: number) => {
-  if (index === context.selectedIndex) {
-    context.setSelectedIndex(NONE);
-    return;
-  }
-  context.setSelectedIndex(index);
-};
-
-const tileFrom = (context: GroupContext, index: number, count: number) => {
-  const source = context.groups[index];
-  if (!source) {
-    return;
-  }
-  commit(context, [...context.groups, ...tileGroups(source, context.sheet, count)]);
-  context.setSelectedIndex(NONE);
-};
-
-const replaceAt = (names: string[], target: number, value: string): string[] =>
-  names.map((existing, at) => {
-    if (at === target) {
-      return value;
-    }
-    return existing;
-  });
-
-const removeAllGroups = (context: GroupContext) => {
-  commit(context, []);
-  context.setSelectedIndex(NONE);
+  selectTile: (index: number) => void;
+  deselectTile: () => void;
+  prevTile: () => void;
+  nextTile: () => void;
 };
 
 const mutateHandlers = (context: GroupContext) => ({
@@ -151,6 +54,13 @@ const navHandlers = (context: GroupContext) => ({
   prev: () => stepSelection(context, -STEP),
   select: context.setSelectedIndex,
   toggle: (index: number) => toggleAt(context, index),
+});
+
+const tileHandlers = (context: GroupContext) => ({
+  deselectTile: () => context.setSelectedTileIndex(NONE),
+  nextTile: () => stepTileSelection(context, STEP),
+  prevTile: () => stepTileSelection(context, -STEP),
+  selectTile: (index: number) => context.setSelectedTileIndex(index),
 });
 
 const templateHandlers = (context: GroupContext) => ({
@@ -173,6 +83,7 @@ const fieldHandlers = (context: GroupContext) => ({
 export const makeGroupHandlers = (context: GroupContext): GroupHandlers => ({
   ...mutateHandlers(context),
   ...navHandlers(context),
+  ...tileHandlers(context),
   ...templateHandlers(context),
   ...fieldHandlers(context),
 });

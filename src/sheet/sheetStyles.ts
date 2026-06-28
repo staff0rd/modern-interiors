@@ -18,6 +18,7 @@ export const sheetStyles = {
     flex: 1,
     justifyContent: "center",
     minHeight: 0,
+    minWidth: 0,
     overflow: "auto",
     padding: 16,
   },
@@ -25,7 +26,7 @@ export const sheetStyles = {
   cell: {
     border: "1px dashed #57d9a366",
     boxSizing: "border-box",
-    pointerEvents: "none",
+    cursor: "pointer",
     position: "absolute",
   },
   cellLabel: {
@@ -42,6 +43,12 @@ export const sheetStyles = {
     textOverflow: "ellipsis",
     top: 0,
     whiteSpace: "nowrap",
+  },
+  cellSelected: {
+    background: "#5b8cff55",
+    border: "2px solid #9bb8ff",
+    boxShadow: "0 0 0 2px #5b8cff, 0 0 8px 2px #5b8cff99",
+    zIndex: 2,
   },
   clearButton: {
     background: "#1d1f27",
@@ -202,4 +209,11 @@ export const inactiveStyle = (interactive: boolean): CSSProperties => {
     return {};
   }
   return sheetStyles.inactive;
+};
+
+export const cellSelectedStyle = (selected: boolean): CSSProperties => {
+  if (selected) {
+    return sheetStyles.cellSelected;
+  }
+  return {};
 };

@@ -8,17 +8,20 @@ import {
 } from "../metadata/schema.ts";
 import { useDebouncedCallback } from "../metadata/useDebouncedCallback.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
-import { defaultCellSize } from "./groupCells.ts";
+import { cellCount, defaultCellSize } from "./groupCells.ts";
 import { makeGroupHandlers, type GroupHandlers } from "./groupHandlers.ts";
 import type { SheetSize } from "./groupTiling.ts";
 import { useParamSelection } from "./useParamSelection.ts";
+import { useTileSelection } from "./useTileSelection.ts";
 
 const ZERO = 0;
 const GROUP_PARAM = "group";
+const TILE_PARAM = "tile";
 
 export type SheetGroupsState = {
   groups: SubSpriteGroup[];
   selectedIndex: number;
+  selectedTileIndex: number;
   sheet: SheetSize;
   template: GroupTemplate;
   setTemplate: (template: GroupTemplate) => void;
@@ -35,6 +38,13 @@ const defaultTemplate = (entry: ManifestEntry | undefined): GroupTemplate => {
 const persistable = (groups: SubSpriteGroup[]): SubSpriteGroup[] =>
   groups.filter((group) => subSpriteGroupSchema.safeParse(group).success);
 
+const tileCountOf = (group: SubSpriteGroup | undefined): number => {
+  if (!group) {
+    return ZERO;
+  }
+  return cellCount(group);
+};
+
 export const useSheetGroups = (
   store: MetadataStore,
   path: string,
@@ -47,6 +57,11 @@ export const useSheetGroups = (
   );
   const [showGrid, setShowGrid] = useState(false);
   const [selectedIndex, setSelectedIndex] = useParamSelection(GROUP_PARAM, groups.length);
+  const [selectedTileIndex, setSelectedTileIndex] = useTileSelection(
+    TILE_PARAM,
+    tileCountOf(groups[selectedIndex]),
+    selectedIndex,
+  );
   const persist = useDebouncedCallback((next: SubSpriteGroup[]) =>
     store.setSubSpriteGroups(path, persistable(next)),
   );
@@ -56,8 +71,10 @@ export const useSheetGroups = (
     groups,
     persist,
     selectedIndex,
+    selectedTileIndex,
     setGroups,
     setSelectedIndex,
+    setSelectedTileIndex,
     sheet,
     template,
   });
@@ -66,6 +83,7 @@ export const useSheetGroups = (
     groups,
     handlers,
     selectedIndex,
+    selectedTileIndex,
     setShowGrid,
     setTemplate: (next) => {
       setTemplateState(next);

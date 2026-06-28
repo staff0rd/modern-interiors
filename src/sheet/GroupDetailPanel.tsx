@@ -20,10 +20,12 @@ export const GroupDetailPanel = ({ mode, view, groupState }: GroupDetailPanelPro
       url={view.url}
       sheetWidth={view.entry.width}
       sheetHeight={view.entry.height}
+      selectedTileIndex={groupState.selectedTileIndex}
       onName={(name) => groupState.handlers.setName(groupState.selectedIndex, name)}
       onPrev={groupState.handlers.prev}
       onNext={groupState.handlers.next}
       onClose={groupState.handlers.deselect}
+      onSelectTile={groupState.handlers.selectTile}
     />
   );
 };

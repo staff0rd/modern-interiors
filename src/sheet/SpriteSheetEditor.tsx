@@ -5,14 +5,15 @@ import { editorStyles } from "../anim/editorStyles.ts";
 import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { EditorChrome } from "../variants/EditorChrome.tsx";
 import { GroupDetailPanel } from "./GroupDetailPanel.tsx";
-import { snapRect } from "./groupCells.ts";
 import { SheetCanvas } from "./SheetCanvas.tsx";
-import { SheetPanel, type SheetMode } from "./SheetPanel.tsx";
+import { SheetPanel } from "./SheetPanel.tsx";
+import { drawHandlerFor, gridCellFor, snapFor, defaultMode } from "./sheetModeHelpers.ts";
 import { sheetStyles } from "./sheetStyles.ts";
 import { SubSpriteDetailPanel } from "./SubSpriteDetailPanel.tsx";
+import { TileDetailPanel } from "./TileDetailPanel.tsx";
 import { useSheetMode } from "./useSheetMode.ts";
-import { useSheetEditor, type Rect, type SheetEditorState } from "./useSheetEditor.ts";
-import { useSheetGroups, type SheetGroupsState } from "./useSheetGroups.ts";
+import { useSheetEditor } from "./useSheetEditor.ts";
+import { useSheetGroups } from "./useSheetGroups.ts";
 
 type SpriteSheetEditorProps = {
   store: MetadataStore;
@@ -21,37 +22,6 @@ type SpriteSheetEditorProps = {
   nav?: EditorNav;
   readOnly?: boolean;
   notice?: ReactNode;
-};
-
-const drawHandlerFor = (mode: SheetMode, view: SheetEditorState, groupState: SheetGroupsState) => {
-  if (mode === "group") {
-    return groupState.handlers.draw;
-  }
-  return view.handlers.draw;
-};
-
-const gridCellFor = (mode: SheetMode, groupState: SheetGroupsState) => {
-  if (mode === "group" && groupState.showGrid) {
-    return { height: groupState.template.cellHeight, width: groupState.template.cellWidth };
-  }
-  return undefined;
-};
-
-const snapFor = (mode: SheetMode, groupState: SheetGroupsState) => {
-  if (mode === "group") {
-    const { cellWidth, cellHeight } = groupState.template;
-    return (rect: Rect) => snapRect(rect, cellWidth, cellHeight);
-  }
-  return undefined;
-};
-
-const NO_SUBS = 0;
-
-const defaultMode = (subSpriteCount: number): SheetMode => {
-  if (subSpriteCount > NO_SUBS) {
-    return "sub";
-  }
-  return "group";
 };
 
 export const SpriteSheetEditor = ({
@@ -93,6 +63,7 @@ export const SpriteSheetEditor = ({
           />
         </div>
         <GroupDetailPanel mode={mode} view={view} groupState={groupState} />
+        <TileDetailPanel mode={mode} view={view} groupState={groupState} />
         <SubSpriteDetailPanel mode={mode} view={view} />
         <SheetPanel
           mode={mode}

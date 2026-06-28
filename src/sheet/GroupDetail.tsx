@@ -1,5 +1,6 @@
 import { editorStyles } from "../anim/editorStyles.ts";
 import type { SubSpriteGroup } from "../metadata/schema.ts";
+import { GroupDetailCell } from "./GroupDetailCell.tsx";
 import { groupCells } from "./groupCells.ts";
 import { sheetStyles } from "./sheetStyles.ts";
 
@@ -17,10 +18,12 @@ type GroupDetailProps = {
   url: string;
   sheetWidth: number;
   sheetHeight: number;
+  selectedTileIndex: number;
   onName: (name: string) => void;
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
+  onSelectTile: (index: number) => void;
 };
 
 export const GroupDetail = ({
@@ -28,10 +31,12 @@ export const GroupDetail = ({
   url,
   sheetWidth,
   sheetHeight,
+  selectedTileIndex,
   onName,
   onPrev,
   onNext,
   onClose,
+  onSelectTile,
 }: GroupDetailProps) => {
   const zoom = detailZoom(group);
   return (
@@ -73,18 +78,15 @@ export const GroupDetail = ({
           draggable={false}
         />
         {groupCells(group).map((cell) => (
-          <div
+          <GroupDetailCell
             key={cell.index}
-            style={{
-              ...sheetStyles.cell,
-              height: group.cellHeight * zoom,
-              left: cell.col * group.cellWidth * zoom,
-              top: cell.row * group.cellHeight * zoom,
-              width: group.cellWidth * zoom,
-            }}
-          >
-            <span style={sheetStyles.cellLabel}>{cell.name || cell.index}</span>
-          </div>
+            cell={cell}
+            zoom={zoom}
+            cellWidth={group.cellWidth}
+            cellHeight={group.cellHeight}
+            selected={cell.index === selectedTileIndex}
+            onSelect={onSelectTile}
+          />
         ))}
       </div>
     </div>
