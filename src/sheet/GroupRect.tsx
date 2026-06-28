@@ -1,7 +1,6 @@
 import type { CSSProperties, MouseEvent } from "react";
 
 import type { SubSpriteGroup } from "../metadata/schema.ts";
-import { groupCells } from "./groupCells.ts";
 import { inactiveStyle, sheetStyles } from "./sheetStyles.ts";
 
 const selectionStyle = (selected: boolean): CSSProperties => {
@@ -38,20 +37,6 @@ export const GroupRect = ({ group, scale, selected, interactive, onSelect }: Gro
       style={{ ...groupStyle(group, scale, selected), ...inactiveStyle(interactive) }}
       onMouseDown={select}
     >
-      {groupCells(group).map((cell) => (
-        <div
-          key={cell.index}
-          style={{
-            ...sheetStyles.cell,
-            height: cell.rect.height * scale,
-            left: cell.col * group.cellWidth * scale,
-            top: cell.row * group.cellHeight * scale,
-            width: cell.rect.width * scale,
-          }}
-        >
-          <span style={sheetStyles.cellLabel}>{cell.name || cell.index}</span>
-        </div>
-      ))}
       <span style={sheetStyles.groupLabel}>{group.name || "(unnamed)"}</span>
     </div>
   );
