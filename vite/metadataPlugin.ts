@@ -4,11 +4,12 @@ import { join, normalize } from "node:path";
 import type { Plugin } from "vite";
 
 import { errorMessage } from "../src/metadata/errorMessage.ts";
-import { emptyMetadata, metadataSchema } from "../src/metadata/schema.ts";
+import { emptyMetadata, metadataSchema, paintReferenceSchema } from "../src/metadata/schema.ts";
 import { GENERATED_DIR, writeGeneratedTree } from "./generateOutput.ts";
 
 const METADATA_FILE = join(process.cwd(), "metadata", "metadata.json");
 const MANIFEST_FILE = join(process.cwd(), "metadata", "manifest.json");
+const PAINT_FILE = join(process.cwd(), "metadata", "paint.json");
 const JSON_INDENT = 2;
 const HTTP_OK = 200;
 const HTTP_BAD_REQUEST = 400;
@@ -81,6 +82,16 @@ const putMetadata = async (req: Requester, res: Responder) => {
   }
 };
 
+const putPaint = async (req: Requester, res: Responder) => {
+  try {
+    const parsed = paintReferenceSchema.parse(JSON.parse(await readBody(req)));
+    await writeFile(PAINT_FILE, `${JSON.stringify(parsed, null, JSON_INDENT)}\n`);
+    sendJson(res, HTTP_OK, { ok: true });
+  } catch (error) {
+    sendJson(res, HTTP_BAD_REQUEST, { error: errorMessage(error, "save paint failed") });
+  }
+};
+
 export const metadataPlugin = (): Plugin => ({
   config: () => ({
     server: { watch: { ignored: [METADATA_FILE, GENERATED_DIR, `${GENERATED_DIR}/**`] } },
@@ -102,6 +113,16 @@ export const metadataPlugin = (): Plugin => ({
       }
       if (req.method && WRITE_METHODS.has(req.method)) {
         return putMetadata(req, res);
+      }
+      return sendJson(res, HTTP_METHOD_NOT_ALLOWED, { error: "method not allowed" });
+    });
+
+    server.middlewares.use("/api/paint", (req, res) => {
+      if (req.method === "GET") {
+        return serveFile(res, PAINT_FILE, () => notFound(res));
+      }
+      if (req.method && WRITE_METHODS.has(req.method)) {
+        return putPaint(req, res);
       }
       return sendJson(res, HTTP_METHOD_NOT_ALLOWED, { error: "method not allowed" });
     });

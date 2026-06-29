@@ -1,60 +1,89 @@
-import type { MetadataStore } from "../metadata/useMetadata.ts";
-import { groupCells, type Cell } from "../sheet/groupCells.ts";
+import type { Palette, PaletteEntry } from "./palette.ts";
 import { PaintPanel } from "./PaintPanel.tsx";
 import { columns, styles, swatchStyle } from "./generateStyles.ts";
-import { cropStyle, sheetSize, wallGroup, type SheetSize } from "./tileSheet.ts";
-import { GROUP_INDEX, GROUP_TILE_COLS } from "./tileset.ts";
+import { cropStyle } from "./tileSheet.ts";
 
-const FIRST = 0;
 const PALETTE_SCALE = 3;
+const EMPTY = 0;
+const ONE = 1;
 
 type SwatchProps = {
-  cell: Cell;
-  sheet: SheetSize;
+  entry: PaletteEntry;
   active: boolean;
-  onSelect: (index: number) => void;
+  onSelect: (token: string) => void;
 };
 
-const Swatch = ({ cell, sheet, active, onSelect }: SwatchProps) => (
+const Swatch = ({ entry, active, onSelect }: SwatchProps) => (
   <button
-    style={swatchStyle(active)}
-    onClick={() => onSelect(cell.index)}
-    title={`${cell.col},${cell.row}`}
+    style={{
+      ...swatchStyle(active),
+      gridColumnStart: entry.col + ONE,
+      gridRowStart: entry.row + ONE,
+    }}
+    onClick={() => onSelect(entry.token)}
+    title={entry.token}
   >
-    <div style={cropStyle(cell.rect, sheet, PALETTE_SCALE)} />
+    <div style={cropStyle(entry.rect, entry.image, PALETTE_SCALE)} />
   </button>
 );
 
-type InspectorProps = {
-  store: MetadataStore;
-  selected: number;
-  onSelect: (index: number) => void;
-  onClear: () => void;
+type SectionProps = {
+  title: string;
+  entries: PaletteEntry[];
+  selected: string;
+  onSelect: (token: string) => void;
+  empty: string;
 };
 
-export const TileInspector = ({ store, selected, onSelect, onClear }: InspectorProps) => {
-  const group = wallGroup(store.metadata);
-  if (!group) {
-    return <div style={styles.inspector}>Loading tiles…</div>;
-  }
-  const sheet = sheetSize(store.manifest);
-  const cells = groupCells(group);
-  const current = cells[selected] ?? cells[FIRST];
+const Section = ({ title, entries, selected, onSelect, empty }: SectionProps) => {
+  const colCount = entries.reduce((max, entry) => Math.max(max, entry.col + ONE), ONE);
   return (
-    <div style={styles.inspector}>
-      <strong>group-{GROUP_INDEX} tiles</strong>
-      <div style={columns(GROUP_TILE_COLS)}>
-        {cells.map((cell) => (
+    <>
+      <strong>{title}</strong>
+      {entries.length === EMPTY && <div style={styles.meta}>{empty}</div>}
+      <div style={columns(colCount)}>
+        {entries.map((entry) => (
           <Swatch
-            key={cell.index}
-            cell={cell}
-            sheet={sheet}
-            active={cell.index === selected}
+            key={entry.token}
+            entry={entry}
+            active={entry.token === selected}
             onSelect={onSelect}
           />
         ))}
       </div>
-      {current && <PaintPanel cell={current} sheet={sheet} onClear={onClear} />}
+    </>
+  );
+};
+
+type InspectorProps = {
+  palette: Palette;
+  selected: string;
+  onSelect: (token: string) => void;
+  onClear: () => void;
+};
+
+export const TileInspector = ({ palette, selected, onSelect, onClear }: InspectorProps) => {
+  if (!palette.walls.length && !palette.floors.length) {
+    return <div style={styles.inspector}>Loading tiles…</div>;
+  }
+  const current = [...palette.walls, ...palette.floors].find((entry) => entry.token === selected);
+  return (
+    <div style={styles.inspector}>
+      <Section
+        title="Walls"
+        entries={palette.walls}
+        selected={selected}
+        onSelect={onSelect}
+        empty="No wall group defined yet."
+      />
+      <Section
+        title="Floors"
+        entries={palette.floors}
+        selected={selected}
+        onSelect={onSelect}
+        empty="No floor group defined yet."
+      />
+      {current && <PaintPanel entry={current} onClear={onClear} />}
     </div>
   );
 };

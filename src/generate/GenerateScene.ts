@@ -1,20 +1,18 @@
 import Phaser from "phaser";
 
+import { cellTile } from "./cellTile.ts";
 import { buildGrid, type Grid } from "./layout.ts";
 import { roomOverlay } from "./roomOverlay.ts";
 import { cellAt, CELL_MISS, center, fitScale } from "./sceneLayout.ts";
 import {
-  autotileKey,
   type AutotileLookup,
-  type Cell,
   FLOOR_CELL,
   FLOORS_KEY,
+  FLOORS_ONLY_KEY,
+  FLOORS_ONLY_URL,
   FLOORS_URL,
   type PaintMap,
-  paletteCell,
   TILE,
-  WALL_LAYER,
-  wallFrame,
   WALLS_KEY,
   WALLS_URL,
 } from "./tileset.ts";
@@ -56,6 +54,10 @@ export class GenerateScene extends Phaser.Scene {
   preload() {
     this.load.spritesheet(WALLS_KEY, WALLS_URL, { frameHeight: TILE, frameWidth: TILE });
     this.load.spritesheet(FLOORS_KEY, FLOORS_URL, { frameHeight: TILE, frameWidth: TILE });
+    this.load.spritesheet(FLOORS_ONLY_KEY, FLOORS_ONLY_URL, {
+      frameHeight: TILE,
+      frameWidth: TILE,
+    });
   }
 
   create() {
@@ -118,23 +120,14 @@ export class GenerateScene extends Phaser.Scene {
     const at = row * grid.cols + col;
     const point: Point = { px: col * TILE, py: row * TILE };
     this.place(FLOORS_KEY, FLOOR_CELL, point);
-    if (!grid.wall[at]) {
+    const placement = cellTile(this.config, grid, at);
+    if (placement) {
+      this.place(placement.key, placement.frame, point);
       return;
     }
-    const cell = this.wallCellFor(grid, at);
-    if (cell) {
-      this.place(WALLS_KEY, wallFrame(cell), point);
-      return;
+    if (grid.wall[at]) {
+      this.placeholder(point);
     }
-    this.placeholder(point);
-  }
-
-  private wallCellFor(grid: Grid, at: number): Cell | undefined {
-    const painted = this.config.paint[at];
-    if (painted !== undefined) {
-      return paletteCell(painted);
-    }
-    return this.config.lookup.get(autotileKey(WALL_LAYER, grid.mask[at] ?? ZERO));
   }
 
   private place(key: string, frame: number, point: Point) {
