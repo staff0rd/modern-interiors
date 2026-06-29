@@ -1,88 +1,65 @@
 import type { Footprint, RoomRect } from "./bsp.ts";
+import { connectRooms } from "./connectRooms.ts";
+import {
+  bottom,
+  type Canvas,
+  columnsOverlap,
+  put,
+  REGION_INTERIOR,
+  REGION_OUTSIDE,
+  REGION_WALL,
+  type Region,
+  right,
+} from "./regionGrid.ts";
 
+const ZERO = 0;
 const ONE = 1;
-const TWO = 2;
-const GAP = 1;
+const TOP_WALL = 3;
+const BASEBOARD = 1;
+const SIDE_WALL = 1;
 
-const REGION_OUTSIDE = 0;
-export const REGION_WALL = 1;
-export const REGION_INTERIOR = 2;
-export const REGION_WALKWAY = 3;
+const hasRoomBelow = (room: RoomRect, rooms: RoomRect[]): boolean =>
+  rooms.some(
+    (other) => other !== room && other.top === bottom(room) && columnsOverlap(room, other),
+  );
 
-export type Region =
-  | typeof REGION_OUTSIDE
-  | typeof REGION_WALL
-  | typeof REGION_INTERIOR
-  | typeof REGION_WALKWAY;
+const bottomThickness = (room: RoomRect, rooms: RoomRect[]): number => {
+  if (hasRoomBelow(room, rooms)) {
+    return ZERO;
+  }
+  return BASEBOARD;
+};
 
-type Point = { col: number; row: number };
+const wallOrInterior = (onWall: boolean): Region => {
+  if (onWall) {
+    return REGION_WALL;
+  }
+  return REGION_INTERIOR;
+};
 
-type Canvas = { region: Region[]; cols: number };
-
-export const insetRoom = (room: RoomRect): RoomRect => ({
-  height: room.height - GAP * TWO,
-  left: room.left + GAP,
-  top: room.top + GAP,
-  width: room.width - GAP * TWO,
-});
-
-const roomCenter = (room: RoomRect): Point => ({
-  col: room.left + Math.floor(room.width / TWO),
-  row: room.top + Math.floor(room.height / TWO),
-});
-
-const isEdge = (room: RoomRect, col: number, row: number): boolean =>
-  row === room.top ||
-  row === room.top + room.height - ONE ||
-  col === room.left ||
-  col === room.left + room.width - ONE;
-
-const paintRoom = (canvas: Canvas, room: RoomRect): void => {
-  for (let row = room.top; row < room.top + room.height; row += ONE) {
-    for (let col = room.left; col < room.left + room.width; col += ONE) {
-      const at = row * canvas.cols + col;
-      if (isEdge(room, col, row)) {
-        canvas.region[at] = REGION_WALL;
-      } else {
-        canvas.region[at] = REGION_INTERIOR;
-      }
+const paintRoom = (canvas: Canvas, room: RoomRect, rooms: RoomRect[]): void => {
+  const topEnd = room.top + TOP_WALL;
+  const bottomStart = bottom(room) - bottomThickness(room, rooms);
+  for (let row = room.top; row < bottom(room); row += ONE) {
+    for (let col = room.left; col < right(room); col += ONE) {
+      const onWall =
+        row < topEnd ||
+        row >= bottomStart ||
+        col < room.left + SIDE_WALL ||
+        col >= right(room) - SIDE_WALL;
+      put(canvas, { col, row }, wallOrInterior(onWall));
     }
   }
-};
-
-const carveWalkway = (canvas: Canvas, col: number, row: number): void => {
-  const at = row * canvas.cols + col;
-  if (canvas.region[at] === REGION_OUTSIDE) {
-    canvas.region[at] = REGION_WALKWAY;
-  }
-};
-
-const carveCorridor = (canvas: Canvas, from: Point, to: Point): void => {
-  for (let col = Math.min(from.col, to.col); col <= Math.max(from.col, to.col); col += ONE) {
-    carveWalkway(canvas, col, from.row);
-  }
-  for (let row = Math.min(from.row, to.row); row <= Math.max(from.row, to.row); row += ONE) {
-    carveWalkway(canvas, to.col, row);
-  }
-};
-
-const connectRooms = (canvas: Canvas, rooms: RoomRect[]): void => {
-  const centers = rooms.map(roomCenter);
-  centers.forEach((to, order) => {
-    const from = centers[order - ONE];
-    if (from) {
-      carveCorridor(canvas, from, to);
-    }
-  });
 };
 
 export const classifyRegions = (footprint: Footprint, rooms: RoomRect[]): Region[] => {
   const canvas: Canvas = {
     cols: footprint.cols,
     region: new Array<Region>(footprint.cols * footprint.rows).fill(REGION_OUTSIDE),
+    rows: footprint.rows,
   };
   for (const room of rooms) {
-    paintRoom(canvas, room);
+    paintRoom(canvas, room, rooms);
   }
   connectRooms(canvas, rooms);
   return canvas.region;

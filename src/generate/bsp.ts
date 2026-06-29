@@ -7,9 +7,9 @@ export type Footprint = { cols: number; rows: number };
 const ZERO = 0;
 const ONE = 1;
 const TWO = 2;
-const MIN_ROOM = 6;
+const MIN_ROOM = 9;
 const DOUBLE_WALL_SPAN = MIN_ROOM * TWO;
-const MAX_DEPTH = 5;
+const MAX_DEPTH = 4;
 const ASPECT_BIAS = 1.25;
 const EVEN_CHANCE = 0.5;
 

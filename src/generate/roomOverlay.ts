@@ -1,7 +1,7 @@
 import type Phaser from "phaser";
 
 import type { Grid } from "./layout.ts";
-import { REGION_INTERIOR, REGION_WALKWAY, REGION_WALL, type Region } from "./regions.ts";
+import { REGION_INTERIOR, REGION_WALKWAY, REGION_WALL, type Region } from "./regionGrid.ts";
 import { TILE } from "./tileset.ts";
 
 const FILL_ALPHA = 0.4;

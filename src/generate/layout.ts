@@ -1,5 +1,6 @@
 import { bspRooms, type Footprint, type RoomRect } from "./bsp.ts";
-import { classifyRegions, insetRoom, type Region, REGION_WALL } from "./regions.ts";
+import { classifyRegions } from "./regions.ts";
+import { type Region, REGION_WALL } from "./regionGrid.ts";
 import { makeRng } from "./rng.ts";
 
 const ZERO = 0;
@@ -83,7 +84,7 @@ const cellMask = (field: Field, at: number): number => {
 
 export const buildGrid = (seed: number, footprint: Footprint): Grid => {
   const { cols, rows } = footprint;
-  const rooms = bspRooms(makeRng(seed), footprint).map(insetRoom);
+  const rooms = bspRooms(makeRng(seed), footprint);
   const region = classifyRegions(footprint, rooms);
   const wall = region.map((value) => value === REGION_WALL);
   const field: Field = { cols, rows, wall };
