@@ -5,48 +5,44 @@ const ONE = 1;
 
 export type SheetSize = { width: number; height: number };
 
-type BlockGrid = { across: number; down: number; blockWidth: number; blockHeight: number };
+type Block = { width: number; height: number };
+type Position = { left: number; top: number };
+type Tiling = { source: SubSpriteGroup; block: Block; colsPerRow: number; wrapLeft: number };
 
-const blockGrid = (source: SubSpriteGroup, sheet: SheetSize): BlockGrid => {
+const blockOf = (source: SubSpriteGroup): Block => {
   const { cols, rows } = gridDims(source);
-  const blockWidth = cols * source.cellWidth;
-  const blockHeight = rows * source.cellHeight;
-  return {
-    across: Math.max(ONE, Math.floor(sheet.width / blockWidth)),
-    blockHeight,
-    blockWidth,
-    down: Math.max(ONE, Math.floor(sheet.height / blockHeight)),
-  };
+  return { height: rows * source.cellHeight, width: cols * source.cellWidth };
 };
 
-const sourceSlot = (source: SubSpriteGroup, grid: BlockGrid): number => {
-  const col = Math.floor(source.rect.left / grid.blockWidth);
-  const row = Math.floor(source.rect.top / grid.blockHeight);
-  return row * grid.across + col;
+const tilingOf = (source: SubSpriteGroup, sheet: SheetSize): Tiling => {
+  const block = blockOf(source);
+  const wrapLeft = source.rect.left % block.width;
+  const colsPerRow = Math.max(ONE, Math.floor((sheet.width - wrapLeft) / block.width));
+  return { block, colsPerRow, source, wrapLeft };
 };
 
-const tileBlock = (source: SubSpriteGroup, grid: BlockGrid, slot: number): SubSpriteGroup => {
-  const col = slot % grid.across;
-  const row = Math.floor(slot / grid.across);
+const positionAt = (tiling: Tiling, slot: number): Position => ({
+  left: tiling.wrapLeft + (slot % tiling.colsPerRow) * tiling.block.width,
+  top: tiling.source.rect.top + Math.floor(slot / tiling.colsPerRow) * tiling.block.height,
+});
+
+const blockAt = (source: SubSpriteGroup, block: Block, position: Position): SubSpriteGroup => {
   const { cols, rows } = gridDims(source);
   return {
     cellHeight: source.cellHeight,
     cellWidth: source.cellWidth,
     description: undefined,
-    name: `group-${slot}`,
-    rect: {
-      height: grid.blockHeight,
-      left: col * grid.blockWidth,
-      top: row * grid.blockHeight,
-      width: grid.blockWidth,
-    },
+    name: "",
+    rect: { height: block.height, left: position.left, top: position.top, width: block.width },
     variantNames: adjustNames(source.variantNames, cols * rows),
   };
 };
 
 export const remainingTileCount = (source: SubSpriteGroup, sheet: SheetSize): number => {
-  const grid = blockGrid(source, sheet);
-  return Math.max(ONE, grid.across * grid.down - sourceSlot(source, grid) - ONE);
+  const { block, colsPerRow, wrapLeft } = tilingOf(source, sheet);
+  const sourceCol = (source.rect.left - wrapLeft) / block.width;
+  const rows = Math.max(ONE, Math.floor((sheet.height - source.rect.top) / block.height));
+  return Math.max(ONE, colsPerRow - ONE - sourceCol + (rows - ONE) * colsPerRow);
 };
 
 export const tileGroups = (
@@ -54,10 +50,12 @@ export const tileGroups = (
   sheet: SheetSize,
   count: number,
 ): SubSpriteGroup[] => {
+  const tiling = tilingOf(source, sheet);
+  const startSlot = (source.rect.left - tiling.wrapLeft) / tiling.block.width + ONE;
   const safeCount = Math.max(ONE, Math.floor(count));
-  const grid = blockGrid(source, sheet);
-  const start = sourceSlot(source, grid) + ONE;
   return Array.from({ length: safeCount }, (_unused, index) =>
-    tileBlock(source, grid, start + index),
-  );
+    positionAt(tiling, startSlot + index),
+  )
+    .filter((position) => position.top + tiling.block.height <= sheet.height)
+    .map((position) => blockAt(source, tiling.block, position));
 };

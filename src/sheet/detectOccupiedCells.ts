@@ -1,4 +1,5 @@
 import type { SubSprite } from "../metadata/schema.ts";
+import { occupancyKey } from "./groupCells.ts";
 
 type Rect = SubSprite["rect"];
 
@@ -9,6 +10,9 @@ const BLUE = 2;
 const ALPHA = 3;
 const CHANNELS = 4;
 const TRANSPARENT = 0;
+const FNV_OFFSET = 2166136261;
+const FNV_PRIME = 16777619;
+const RADIX = 36;
 
 export type DetectedCell = { col: number; rect: Rect; row: number };
 
@@ -86,6 +90,37 @@ export const detectOccupiedCells = async (
     }
   }
   return cells;
+};
+
+const hashCell = (pixels: Pixels, rect: Rect): string => {
+  let hash = FNV_OFFSET;
+  for (let py = rect.top; py < rect.top + rect.height; py += ONE) {
+    let offset = (py * pixels.width + rect.left) * CHANNELS;
+    const end = offset + rect.width * CHANNELS;
+    for (; offset < end; offset += ONE) {
+      hash = Math.imul(hash ^ (pixels.data[offset] ?? ZERO), FNV_PRIME);
+    }
+  }
+  return (hash >>> ZERO).toString(RADIX);
+};
+
+export const detectCellSignatures = async (
+  url: string,
+  { frameWidth, frameHeight, rgbThreshold }: DetectOptions,
+): Promise<Map<string, string>> => {
+  const pixels = readPixels(await loadImage(url));
+  const cols = Math.floor(pixels.width / frameWidth);
+  const rows = Math.floor(pixels.data.length / CHANNELS / pixels.width / frameHeight);
+  const signatures = new Map<string, string>();
+  for (let row = ZERO; row < rows; row += ONE) {
+    for (let col = ZERO; col < cols; col += ONE) {
+      const rect = cellRect(col, row, { height: frameHeight, width: frameWidth });
+      if (cellOccupied(pixels, rect, rgbThreshold)) {
+        signatures.set(occupancyKey(col, row), hashCell(pixels, rect));
+      }
+    }
+  }
+  return signatures;
 };
 
 const rectsOverlap = (first: Rect, second: Rect): boolean =>

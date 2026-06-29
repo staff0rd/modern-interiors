@@ -1,5 +1,5 @@
 import type { GroupTemplate, SubSpriteGroup } from "../metadata/schema.ts";
-import { adjustNames, cellCount } from "./groupCells.ts";
+import { adjustNames, cellCount, occupiedInRect, type CellSignatures } from "./groupCells.ts";
 import { groupFromTemplate } from "./groupFromTemplate.ts";
 import { tileGroups, type SheetSize } from "./groupTiling.ts";
 import type { Rect } from "./useSheetEditor.ts";
@@ -8,17 +8,47 @@ export const NONE = -1;
 export const STEP = 1;
 const ONE_CELL = 1;
 const ORIGIN = 0;
+const GEOMETRY_KEYS = ["rect", "cellWidth", "cellHeight"] as const;
 
 export type GroupContext = {
   groups: SubSpriteGroup[];
   template: GroupTemplate;
   sheet: SheetSize;
+  occupied: CellSignatures | null;
   selectedIndex: number;
   selectedTileIndex: number;
   setGroups: (groups: SubSpriteGroup[]) => void;
   setSelectedIndex: (index: number) => void;
   setSelectedTileIndex: (index: number) => void;
   persist: (groups: SubSpriteGroup[]) => void;
+};
+
+const withNames = (group: SubSpriteGroup): SubSpriteGroup => ({
+  ...group,
+  variantNames: adjustNames(group.variantNames, cellCount(group)),
+});
+
+const trimmed = (context: GroupContext, group: SubSpriteGroup): SubSpriteGroup => {
+  const cells = occupiedInRect(context.occupied, group);
+  if (!cells) {
+    return withNames(group);
+  }
+  return withNames({ ...group, cells });
+};
+
+const nextGroup = (
+  context: GroupContext,
+  group: SubSpriteGroup,
+  patch: Partial<SubSpriteGroup>,
+): SubSpriteGroup => {
+  const merged = { ...group, ...patch };
+  if (GEOMETRY_KEYS.some((key) => key in patch)) {
+    return withNames({
+      ...merged,
+      cells: occupiedInRect(context.occupied, merged) ?? merged.cells,
+    });
+  }
+  return withNames(merged);
 };
 
 export const describe = (description: string): string | undefined => {
@@ -34,7 +64,8 @@ const commit = (context: GroupContext, next: SubSpriteGroup[]) => {
 };
 
 export const append = (context: GroupContext, rect: Rect) => {
-  commit(context, [...context.groups, groupFromTemplate(context.template, rect)]);
+  const group = groupFromTemplate(context.template, rect, context.occupied);
+  commit(context, [...context.groups, { ...group, name: `group-${context.groups.length}` }]);
   context.setSelectedIndex(context.groups.length);
 };
 
@@ -45,8 +76,7 @@ export const updateAt = (context: GroupContext, index: number, patch: Partial<Su
       if (at !== index) {
         return group;
       }
-      const next = { ...group, ...patch };
-      return { ...next, variantNames: adjustNames(next.variantNames, cellCount(next)) };
+      return nextGroup(context, group, patch);
     }),
   );
 
@@ -77,10 +107,7 @@ export const templatePatch = (template: GroupTemplate): Partial<SubSpriteGroup> 
 export const applyTemplateToAll = (context: GroupContext) =>
   commit(
     context,
-    context.groups.map((group) => {
-      const next = { ...group, ...templatePatch(context.template) };
-      return { ...next, variantNames: adjustNames(next.variantNames, cellCount(next)) };
-    }),
+    context.groups.map((group) => nextGroup(context, group, templatePatch(context.template))),
   );
 
 export const stepSelection = (context: GroupContext, delta: number) => {
@@ -116,7 +143,11 @@ export const tileFrom = (context: GroupContext, index: number, count: number) =>
   if (!source) {
     return;
   }
-  commit(context, [...context.groups, ...tileGroups(source, context.sheet, count)]);
+  const base = context.groups.length;
+  const tiled = tileGroups(source, context.sheet, count).map((group, offset) =>
+    trimmed(context, { ...group, name: `group-${base + offset}` }),
+  );
+  commit(context, [...context.groups, ...tiled]);
   context.setSelectedIndex(NONE);
 };
 

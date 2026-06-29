@@ -11,6 +11,7 @@ import type { MetadataStore } from "../metadata/useMetadata.ts";
 import { cellCount, defaultCellSize } from "./groupCells.ts";
 import { makeGroupHandlers, type GroupHandlers } from "./groupHandlers.ts";
 import type { SheetSize } from "./groupTiling.ts";
+import { useOccupancy } from "./useOccupancy.ts";
 import { useParamSelection } from "./useParamSelection.ts";
 import { useTileSelection } from "./useTileSelection.ts";
 
@@ -50,12 +51,18 @@ export const useSheetGroups = (
   path: string,
   entry: ManifestEntry | undefined,
 ): SheetGroupsState => {
-  const asset = store.metadata?.assets[path];
-  const [groups, setGroups] = useState<SubSpriteGroup[]>(() => asset?.subSpriteGroups ?? []);
+  const [groups, setGroups] = useState<SubSpriteGroup[]>(
+    () => store.metadata?.assets[path]?.subSpriteGroups ?? [],
+  );
   const [template, setTemplateState] = useState<GroupTemplate>(
-    () => asset?.groupTemplate ?? defaultTemplate(entry),
+    () => store.metadata?.assets[path]?.groupTemplate ?? defaultTemplate(entry),
   );
   const [showGrid, setShowGrid] = useState(false);
+  const occupied = useOccupancy(
+    `/${store.manifest?.root}/${path}`,
+    template.cellWidth,
+    template.cellHeight,
+  );
   const [selectedIndex, setSelectedIndex] = useParamSelection(GROUP_PARAM, groups.length);
   const [selectedTileIndex, setSelectedTileIndex] = useTileSelection(
     TILE_PARAM,
@@ -69,6 +76,7 @@ export const useSheetGroups = (
 
   const handlers = makeGroupHandlers({
     groups,
+    occupied,
     persist,
     selectedIndex,
     selectedTileIndex,

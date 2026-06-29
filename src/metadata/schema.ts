@@ -67,10 +67,16 @@ const autotileTagSchema = z.object({
 });
 export type AutotileTag = z.infer<typeof autotileTagSchema>;
 
+const cellPositionSchema = z.object({
+  col: z.number().int().nonnegative(),
+  row: z.number().int().nonnegative(),
+});
+
 export const subSpriteGroupSchema = z.object({
   autotiles: z.array(autotileTagSchema.nullable()).optional(),
   cellHeight: z.number().int().positive(),
   cellWidth: z.number().int().positive(),
+  cells: z.array(cellPositionSchema).optional(),
   description: z.string().optional(),
   name: z.string().min(MIN_NAME_LENGTH),
   rect: rectSchema,
@@ -102,5 +108,11 @@ export const metadataSchema = z.object({
   version: z.literal(METADATA_VERSION),
 });
 export type Metadata = z.infer<typeof metadataSchema>;
+
+export const paintReferenceSchema = z.object({
+  seed: z.number().int().nonnegative(),
+  tiles: z.record(z.string(), z.string()),
+});
+export type PaintReference = z.infer<typeof paintReferenceSchema>;
 
 export const emptyMetadata = (): Metadata => ({ assets: {}, version: METADATA_VERSION });
