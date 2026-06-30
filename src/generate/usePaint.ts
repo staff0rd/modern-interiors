@@ -9,17 +9,22 @@ const SEED_MAX = 1_000_000;
 
 const newSeed = (): number => Math.floor(Math.random() * SEED_MAX);
 
+const NO_GROUP = undefined;
+
 type Store = {
   seed: number;
   paint: PaintMap;
+  wallGroup: string | undefined;
   ready: boolean;
   setSeed: (seed: number) => void;
   setPaint: Dispatch<SetStateAction<PaintMap>>;
+  setWallGroup: (name: string) => void;
 };
 
 const usePaintFile = (): Store => {
   const [seed, setSeed] = useState(newSeed);
   const [paint, setPaint] = useState<PaintMap>(EMPTY);
+  const [wallGroup, setWallGroup] = useState<string | undefined>(NO_GROUP);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -32,6 +37,7 @@ const usePaintFile = (): Store => {
         if (reference) {
           setSeed(reference.seed);
           setPaint(reference.tiles);
+          setWallGroup(reference.wallGroup);
         }
         setReady(true);
       })
@@ -43,19 +49,21 @@ const usePaintFile = (): Store => {
 
   useEffect(() => {
     if (ready) {
-      savePaint({ seed, tiles: paint }).catch(() => undefined);
+      savePaint({ seed, tiles: paint, wallGroup }).catch(() => undefined);
     }
-  }, [ready, seed, paint]);
+  }, [ready, seed, paint, wallGroup]);
 
-  return { paint, ready, seed, setPaint, setSeed };
+  return { paint, ready, seed, setPaint, setSeed, setWallGroup, wallGroup };
 };
 
 export type Paint = {
   seed: number;
   paint: PaintMap;
+  wallGroup: string | undefined;
   ready: boolean;
   onPick: PickHandler;
   setSeed: (seed: number) => void;
+  setWallGroup: (name: string) => void;
   regenerate: () => void;
   clear: () => void;
 };
@@ -78,5 +86,7 @@ export const usePaint = (selected: string): Paint => {
     regenerate: () => reset(newSeed()),
     seed: store.seed,
     setSeed: reset,
+    setWallGroup: store.setWallGroup,
+    wallGroup: store.wallGroup,
   };
 };

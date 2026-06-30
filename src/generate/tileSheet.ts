@@ -10,10 +10,17 @@ export type SheetSize = { width: number; height: number };
 
 export type SheetImage = { url: string; size: SheetSize };
 
-export const wallGroup = (metadata: Metadata | null): SubSpriteGroup | undefined =>
-  metadata?.assets[WALLS_PATH]?.subSpriteGroups?.find(
-    (group) => group.rect.left === WALL_GROUP_LEFT && group.rect.top === WALL_GROUP_TOP,
-  );
+export const wallGroups = (metadata: Metadata | null): SubSpriteGroup[] =>
+  metadata?.assets[WALLS_PATH]?.subSpriteGroups ?? [];
+
+const defaultWallGroup = (groups: SubSpriteGroup[]): SubSpriteGroup | undefined =>
+  groups.find((group) => group.rect.left === WALL_GROUP_LEFT && group.rect.top === WALL_GROUP_TOP);
+
+export const wallGroup = (metadata: Metadata | null, name?: string): SubSpriteGroup | undefined => {
+  const groups = wallGroups(metadata);
+  const named = groups.find((group) => group.name === name);
+  return named ?? defaultWallGroup(groups);
+};
 
 export const floorGroup = (metadata: Metadata | null): SubSpriteGroup | undefined =>
   metadata?.assets[FLOORS_ONLY_PATH]?.subSpriteGroups?.find(

@@ -13,6 +13,7 @@ import {
   FLOORS_URL,
   type PaintMap,
   TILE,
+  type WallOffset,
   WALLS_KEY,
   WALLS_URL,
 } from "./tileset.ts";
@@ -28,6 +29,7 @@ export type SceneConfig = {
   rows: number;
   lookup: AutotileLookup;
   paint: PaintMap;
+  wallOffset: WallOffset;
   showTiles: boolean;
   showRooms: boolean;
 };

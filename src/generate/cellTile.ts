@@ -8,13 +8,14 @@ import {
   parsePaintToken,
   WALL_LAYER,
   wallFrame,
+  type WallOffset,
   WALLS_KEY,
 } from "./tileset.ts";
 
 const ZERO = 0;
 const LAYER_KEY: Record<PaintLayer, string> = { floor: FLOORS_ONLY_KEY, wall: WALLS_KEY };
 
-export type TileContext = { paint: PaintMap; lookup: AutotileLookup };
+export type TileContext = { paint: PaintMap; lookup: AutotileLookup; wallOffset: WallOffset };
 export type Placement = { key: string; frame: number };
 
 const paintPlacement = (paint: PaintMap, at: number): Placement | null => {
@@ -39,7 +40,7 @@ export const cellTile = (context: TileContext, grid: Grid, at: number): Placemen
   }
   const cell = context.lookup.get(autotileKey(WALL_LAYER, grid.mask[at] ?? ZERO));
   if (cell) {
-    return { frame: wallFrame(cell), key: WALLS_KEY };
+    return { frame: wallFrame(cell, context.wallOffset), key: WALLS_KEY };
   }
   return null;
 };

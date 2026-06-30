@@ -20,16 +20,23 @@ const WALLS_COLS = 24;
 const FLOORS_COLS = 15;
 const FLOORS_ONLY_COLS = 16;
 
-const GROUP_COL = 16;
-const GROUP_ROW = 28;
+const DEFAULT_GROUP_COL = 16;
+const DEFAULT_GROUP_ROW = 28;
 
-export const WALL_GROUP_LEFT = GROUP_COL * TILE;
-export const WALL_GROUP_TOP = GROUP_ROW * TILE;
+export const WALL_GROUP_LEFT = DEFAULT_GROUP_COL * TILE;
+export const WALL_GROUP_TOP = DEFAULT_GROUP_ROW * TILE;
 
 export type Cell = { col: number; row: number };
 
-export const wallFrame = (cell: Cell): number =>
-  (GROUP_ROW + cell.row) * WALLS_COLS + (GROUP_COL + cell.col);
+export type WallOffset = { col: number; row: number };
+
+export const wallOffsetOf = (group: SubSpriteGroup): WallOffset => ({
+  col: group.rect.left / TILE,
+  row: group.rect.top / TILE,
+});
+
+export const wallFrame = (cell: Cell, offset: WallOffset): number =>
+  (offset.row + cell.row) * WALLS_COLS + (offset.col + cell.col);
 
 const FLOOR_COL = 5;
 const FLOOR_ROW = 3;

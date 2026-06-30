@@ -4,12 +4,10 @@ import type { MetadataStore } from "../metadata/useMetadata.ts";
 import type { SceneConfig } from "./GenerateScene.ts";
 import { styles } from "./generateStyles.ts";
 import { GenerateToolbar } from "./GenerateToolbar.tsx";
-import { buildPalette } from "./palette.ts";
 import { TileInspector } from "./TileInspector.tsx";
-import { wallGroup } from "./tileSheet.ts";
-import { buildAutotileLookup } from "./tileset.ts";
 import { useGenerateScene } from "./useGenerateScene.ts";
 import { usePaint } from "./usePaint.ts";
+import { useWallTiles } from "./useWallTiles.ts";
 
 const FOOTPRINT_COLS = 32;
 const FOOTPRINT_ROWS = 20;
@@ -22,12 +20,10 @@ const NO_BRUSH = "";
 export const GenerateView = ({ store }: { store: MetadataStore }) => {
   const [layers, setLayers] = useState<Layers>(INITIAL_LAYERS);
   const [selected, setSelected] = useState(NO_BRUSH);
-  const lookup = useMemo(() => buildAutotileLookup(wallGroup(store.metadata)), [store.metadata]);
-  const palette = useMemo(
-    () => buildPalette(store.metadata, store.manifest),
-    [store.metadata, store.manifest],
-  );
-  const { seed, paint, ready, onPick, clear, setSeed, regenerate } = usePaint(selected);
+  const paintStore = usePaint(selected);
+  const { seed, paint, ready, wallGroup, onPick, clear, setSeed, setWallGroup, regenerate } =
+    paintStore;
+  const { group, groupNames, lookup, wallOffset, palette } = useWallTiles(store, wallGroup);
   const scene = useMemo<SceneConfig>(
     () => ({
       cols: FOOTPRINT_COLS,
@@ -37,8 +33,9 @@ export const GenerateView = ({ store }: { store: MetadataStore }) => {
       seed,
       showRooms: layers.showRooms,
       showTiles: layers.showTiles,
+      wallOffset,
     }),
-    [seed, layers, lookup, paint],
+    [seed, layers, lookup, paint, wallOffset],
   );
   const containerRef = useGenerateScene(scene, onPick, ready);
 
@@ -48,6 +45,11 @@ export const GenerateView = ({ store }: { store: MetadataStore }) => {
       setSelected(first.token);
     }
   }, [palette, selected]);
+
+  const chooseGroup = (name: string) => {
+    setSelected(NO_BRUSH);
+    setWallGroup(name);
+  };
 
   return (
     <div style={styles.page}>
@@ -67,6 +69,9 @@ export const GenerateView = ({ store }: { store: MetadataStore }) => {
           selected={selected}
           onSelect={setSelected}
           onClear={clear}
+          wallGroups={groupNames}
+          wallGroup={group?.name}
+          onWallGroup={chooseGroup}
         />
       </div>
     </div>
