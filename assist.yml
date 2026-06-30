@@ -36,6 +36,11 @@ run:
     args:
       - run
       - build
+  - name: verify:test
+    command: npm
+    args:
+      - run
+      - test
   - name: verify:circular-deps
     command: npx
     args:
@@ -54,6 +59,11 @@ run:
       - ./src
       - --threshold
       - "60"
+  - name: scan-tiles
+    command: npm
+    args:
+      - run
+      - scan-tiles
 commit:
   push: true
 deny:

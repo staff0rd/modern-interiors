@@ -29,6 +29,21 @@ export const manifestSchema = z.object({
 });
 export type Manifest = z.infer<typeof manifestSchema>;
 
+const tileOccurrenceSchema = z.object({
+  col: z.number().int().nonnegative(),
+  path: z.string(),
+  row: z.number().int().nonnegative(),
+});
+export type TileOccurrence = z.infer<typeof tileOccurrenceSchema>;
+
+export const tilesDbSchema = z.object({
+  generatedAt: z.string(),
+  root: z.string(),
+  tiles: z.record(z.string(), z.array(tileOccurrenceSchema).nonempty()),
+  version: z.literal(METADATA_VERSION),
+});
+export type TilesDb = z.infer<typeof tilesDbSchema>;
+
 const rectSchema = z.object({
   height: z.number().int().positive(),
   left: z.number().int().nonnegative(),

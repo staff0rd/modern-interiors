@@ -23,3 +23,6 @@ dist-ssr
 
 
 public/moderninteriors-win
+
+# Generated tile database — regenerate with `npm run scan-tiles`
+metadata/tiles.json

@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "scan-assets": "node scripts/scanAssets.ts",
+    "scan-tiles": "node scripts/scanTiles.ts",
+    "find-tile": "node scripts/findTile.ts",
     "generate": "node scripts/generate.ts",
+    "test": "node --test \"scripts/**/*.test.ts\"",
     "build": "tsc -b && vite build --logLevel error",
     "preview": "vite preview"
   },
