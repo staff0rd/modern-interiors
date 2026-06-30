@@ -7,11 +7,11 @@ import {
   floorTileFrame,
   paintToken,
   type PaintLayer,
+  sheetUrl,
   TILE,
+  wallColumns,
   wallFrame,
-  wallOffsetOf,
-  WALLS_PATH,
-  WALLS_URL,
+  wallFrameSpec,
 } from "./tileset.ts";
 
 const WALL: PaintLayer = "wall";
@@ -30,18 +30,22 @@ export type PaletteEntry = {
 
 export type Palette = { walls: PaletteEntry[]; floors: PaletteEntry[] };
 
+export type WallSelection = { sheet: string; group?: string };
+
 const wallEntries = (
   metadata: Metadata | null,
-  image: SheetImage,
-  groupName: string | undefined,
+  manifest: Manifest | null,
+  wall: WallSelection,
 ): PaletteEntry[] => {
-  const group = wallGroup(metadata, groupName);
+  const group = wallGroup(metadata, wall.sheet, wall.group);
   if (!group) {
     return [];
   }
-  const offset = wallOffsetOf(group);
+  const size = sheetSize(manifest, wall.sheet);
+  const spec = wallFrameSpec(group, wallColumns(size.width));
+  const image: SheetImage = { size, url: sheetUrl(wall.sheet) };
   return groupCells(group).map((cell) => {
-    const frame = wallFrame({ col: cell.col, row: cell.row }, offset);
+    const frame = wallFrame({ col: cell.col, row: cell.row }, spec);
     return {
       col: cell.col,
       frame,
@@ -78,15 +82,11 @@ const floorEntries = (metadata: Metadata | null, image: SheetImage): PaletteEntr
 export const buildPalette = (
   metadata: Metadata | null,
   manifest: Manifest | null,
-  wallGroupName?: string,
+  wall: WallSelection,
 ): Palette => ({
   floors: floorEntries(metadata, {
     size: sheetSize(manifest, FLOORS_ONLY_PATH),
     url: FLOORS_ONLY_URL,
   }),
-  walls: wallEntries(
-    metadata,
-    { size: sheetSize(manifest, WALLS_PATH), url: WALLS_URL },
-    wallGroupName,
-  ),
+  walls: wallEntries(metadata, manifest, wall),
 });

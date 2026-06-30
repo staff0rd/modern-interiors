@@ -29,7 +29,7 @@ export const useGenerateScene = (
       sceneRef.current = null;
       game.destroy(true);
     };
-  }, [ready]);
+  }, [ready, scene.wallUrl]);
 
   useEffect(() => {
     sceneRef.current?.configure(scene);

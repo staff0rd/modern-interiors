@@ -10,16 +10,40 @@ export type SheetSize = { width: number; height: number };
 
 export type SheetImage = { url: string; size: SheetSize };
 
-export const wallGroups = (metadata: Metadata | null): SubSpriteGroup[] =>
-  metadata?.assets[WALLS_PATH]?.subSpriteGroups ?? [];
+export const sheetsWithGroups = (metadata: Metadata | null): string[] =>
+  Object.entries(metadata?.assets ?? {})
+    .filter(([, asset]) => (asset.subSpriteGroups?.length ?? ZERO) > ZERO)
+    .map(([path]) => path);
+
+export const wallSheetPath = (metadata: Metadata | null, name?: string): string => {
+  const sheets = sheetsWithGroups(metadata);
+  if (name && sheets.includes(name)) {
+    return name;
+  }
+  if (sheets.includes(WALLS_PATH)) {
+    return WALLS_PATH;
+  }
+  const [first] = sheets;
+  return first ?? WALLS_PATH;
+};
+
+export const wallGroups = (
+  metadata: Metadata | null,
+  sheetPath: string = WALLS_PATH,
+): SubSpriteGroup[] => metadata?.assets[sheetPath]?.subSpriteGroups ?? [];
 
 const defaultWallGroup = (groups: SubSpriteGroup[]): SubSpriteGroup | undefined =>
   groups.find((group) => group.rect.left === WALL_GROUP_LEFT && group.rect.top === WALL_GROUP_TOP);
 
-export const wallGroup = (metadata: Metadata | null, name?: string): SubSpriteGroup | undefined => {
-  const groups = wallGroups(metadata);
+export const wallGroup = (
+  metadata: Metadata | null,
+  sheetPath: string,
+  name?: string,
+): SubSpriteGroup | undefined => {
+  const groups = wallGroups(metadata, sheetPath);
   const named = groups.find((group) => group.name === name);
-  return named ?? defaultWallGroup(groups);
+  const [first] = groups;
+  return named ?? defaultWallGroup(groups) ?? first;
 };
 
 export const floorGroup = (metadata: Metadata | null): SubSpriteGroup | undefined =>

@@ -113,6 +113,7 @@ export const paintReferenceSchema = z.object({
   seed: z.number().int().nonnegative(),
   tiles: z.record(z.string(), z.string()),
   wallGroup: z.string().optional(),
+  wallSheet: z.string().optional(),
 });
 export type PaintReference = z.infer<typeof paintReferenceSchema>;
 

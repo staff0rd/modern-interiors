@@ -12,7 +12,9 @@ const WALLS_NAME = "Room_Builder_3d_walls_16x16.png";
 export const WALLS_PATH = `1_Interiors/16x16/Room_Builder_subfiles/${WALLS_NAME}`;
 const FLOORS_PATH = `1_Interiors/16x16/Room_Builder_subfiles/${FLOORS_NAME}`;
 export const FLOORS_ONLY_PATH = `1_Interiors/16x16/Old stuff/${FLOORS_ONLY_NAME}`;
-export const WALLS_URL = `/moderninteriors-win/${WALLS_PATH}`;
+const ASSET_BASE = "/moderninteriors-win";
+export const sheetUrl = (path: string): string =>
+  `${ASSET_BASE}/${path.split("/").map(encodeURIComponent).join("/")}`;
 export const FLOORS_URL = `/moderninteriors-win/${FLOORS_PATH}`;
 export const FLOORS_ONLY_URL = `/moderninteriors-win/1_Interiors/16x16/Old%20stuff/${FLOORS_ONLY_NAME}`;
 
@@ -28,15 +30,22 @@ export const WALL_GROUP_TOP = DEFAULT_GROUP_ROW * TILE;
 
 export type Cell = { col: number; row: number };
 
-export type WallOffset = { col: number; row: number };
+export type WallFrameSpec = { col: number; row: number; cols: number };
 
-export const wallOffsetOf = (group: SubSpriteGroup): WallOffset => ({
-  col: group.rect.left / TILE,
-  row: group.rect.top / TILE,
-});
+const ORIGIN = 0;
 
-export const wallFrame = (cell: Cell, offset: WallOffset): number =>
-  (offset.row + cell.row) * WALLS_COLS + (offset.col + cell.col);
+export const wallColumns = (sheetWidth: number): number =>
+  Math.floor(sheetWidth / TILE) || WALLS_COLS;
+
+export const wallFrameSpec = (group: SubSpriteGroup | undefined, cols: number): WallFrameSpec => {
+  if (!group) {
+    return { col: ORIGIN, cols, row: ORIGIN };
+  }
+  return { col: group.rect.left / TILE, cols, row: group.rect.top / TILE };
+};
+
+export const wallFrame = (cell: Cell, spec: WallFrameSpec): number =>
+  (spec.row + cell.row) * spec.cols + (spec.col + cell.col);
 
 const FLOOR_COL = 5;
 const FLOOR_ROW = 3;

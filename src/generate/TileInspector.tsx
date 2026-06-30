@@ -2,6 +2,7 @@ import type { Palette, PaletteEntry } from "./palette.ts";
 import { PaintPanel } from "./PaintPanel.tsx";
 import { columns, styles, swatchStyle } from "./generateStyles.ts";
 import { cropStyle } from "./tileSheet.ts";
+import { WallPickers } from "./WallPickers.tsx";
 
 const PALETTE_SCALE = 3;
 const EMPTY = 0;
@@ -55,39 +56,14 @@ const Section = ({ title, entries, selected, onSelect, empty }: SectionProps) =>
   );
 };
 
-type WallGroupPickerProps = {
-  groups: string[];
-  selected: string | undefined;
-  onSelect: (name: string) => void;
-};
-
-const WallGroupPicker = ({ groups, selected, onSelect }: WallGroupPickerProps) => {
-  if (!groups.length) {
-    return null;
-  }
-  return (
-    <label style={styles.meta}>
-      Wall group{" "}
-      <select
-        style={styles.field}
-        value={selected ?? ""}
-        onChange={(event) => onSelect(event.target.value)}
-      >
-        {groups.map((name) => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-};
-
 type InspectorProps = {
   palette: Palette;
   selected: string;
   onSelect: (token: string) => void;
   onClear: () => void;
+  wallSheets: string[];
+  wallSheet: string | undefined;
+  onWallSheet: (name: string) => void;
   wallGroups: string[];
   wallGroup: string | undefined;
   onWallGroup: (name: string) => void;
@@ -98,6 +74,9 @@ export const TileInspector = ({
   selected,
   onSelect,
   onClear,
+  wallSheets,
+  wallSheet,
+  onWallSheet,
   wallGroups,
   wallGroup,
   onWallGroup,
@@ -108,7 +87,14 @@ export const TileInspector = ({
   const current = [...palette.walls, ...palette.floors].find((entry) => entry.token === selected);
   return (
     <div style={styles.inspector}>
-      <WallGroupPicker groups={wallGroups} selected={wallGroup} onSelect={onWallGroup} />
+      <WallPickers
+        wallSheets={wallSheets}
+        wallSheet={wallSheet}
+        onWallSheet={onWallSheet}
+        wallGroups={wallGroups}
+        wallGroup={wallGroup}
+        onWallGroup={onWallGroup}
+      />
       <Section
         title="Walls"
         entries={palette.walls}

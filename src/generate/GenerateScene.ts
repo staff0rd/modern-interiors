@@ -13,9 +13,8 @@ import {
   FLOORS_URL,
   type PaintMap,
   TILE,
-  type WallOffset,
+  type WallFrameSpec,
   WALLS_KEY,
-  WALLS_URL,
 } from "./tileset.ts";
 
 const ZERO = 0;
@@ -29,7 +28,8 @@ export type SceneConfig = {
   rows: number;
   lookup: AutotileLookup;
   paint: PaintMap;
-  wallOffset: WallOffset;
+  wallSpec: WallFrameSpec;
+  wallUrl: string;
   showTiles: boolean;
   showRooms: boolean;
 };
@@ -54,7 +54,7 @@ export class GenerateScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet(WALLS_KEY, WALLS_URL, { frameHeight: TILE, frameWidth: TILE });
+    this.load.spritesheet(WALLS_KEY, this.config.wallUrl, { frameHeight: TILE, frameWidth: TILE });
     this.load.spritesheet(FLOORS_KEY, FLOORS_URL, { frameHeight: TILE, frameWidth: TILE });
     this.load.spritesheet(FLOORS_ONLY_KEY, FLOORS_ONLY_URL, {
       frameHeight: TILE,
