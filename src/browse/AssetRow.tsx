@@ -2,22 +2,6 @@ import { KIND_VALUES, type Kind } from "../metadata/schema.ts";
 import { badgeStyle, styles } from "./browseStyles.ts";
 import type { Row } from "./rows.ts";
 
-const frameLabel = (frameWidth: number | null, frameHeight: number | null): string => {
-  if (frameWidth && frameHeight) {
-    return ` · ${frameWidth}×${frameHeight}`;
-  }
-  return "";
-};
-
-const SINGLE_VARIANT = 1;
-
-const variantLabel = (variantCount: number): string => {
-  if (variantCount > SINGLE_VARIANT) {
-    return ` · ${variantCount} sizes`;
-  }
-  return "";
-};
-
 const doneLabel = (done: boolean): string => {
   if (done) {
     return "done";
@@ -71,8 +55,6 @@ export const AssetRow = ({ row, root, onKindChange, onEdit }: AssetRowProps) => 
       </span>
       <span style={styles.meta}>
         {row.entry.width}×{row.entry.height}
-        {frameLabel(row.entry.frameWidth, row.entry.frameHeight)}
-        {variantLabel(row.variantCount)}
       </span>
       <KindCell row={row} onKindChange={onKindChange} />
       <span style={badgeStyle(row.done)} title={row.missing.join(", ")}>

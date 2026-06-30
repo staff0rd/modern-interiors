@@ -6,6 +6,7 @@ import { inferKind, parseFrameSize } from "../src/metadata/inferKind.ts";
 import { manifestSchema, METADATA_VERSION, type ManifestEntry } from "../src/metadata/schema.ts";
 
 const PACK_ROOT = "moderninteriors-win";
+const ONLY_FRAME_SIZE = 16;
 const PNG_HEADER_BYTES = 24;
 const WIDTH_OFFSET = 16;
 const HEIGHT_OFFSET = 20;
@@ -80,9 +81,19 @@ const mapPooled = async <Item>(
   return results;
 };
 
+const isAllowedFrameSize = (fullPath: string): boolean => {
+  const path = relative(assetDir, fullPath).split("\\").join("/");
+  const frameSize = parseFrameSize(path);
+  if (!frameSize) {
+    return true;
+  }
+  return frameSize.frameWidth === ONLY_FRAME_SIZE && frameSize.frameHeight === ONLY_FRAME_SIZE;
+};
+
 const main = async (): Promise<void> => {
-  const files: string[] = [];
-  await walk(assetDir, files);
+  const allFiles: string[] = [];
+  await walk(assetDir, allFiles);
+  const files = allFiles.filter(isAllowedFrameSize);
   files.sort();
 
   const entries = await mapPooled(files, CONCURRENCY, toEntry);
