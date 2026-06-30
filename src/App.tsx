@@ -3,6 +3,7 @@ import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { BrowseView } from "./browse/BrowseView.tsx";
 import { editTo, EditorBody } from "./EditorView.tsx";
+import { FindView } from "./find/FindView.tsx";
 import { GenerateView } from "./generate/GenerateView.tsx";
 import { useMetadata, type MetadataStore } from "./metadata/useMetadata.ts";
 
@@ -42,6 +43,7 @@ const App = () => {
           element={<BrowseView store={store} onEdit={(path) => navigate(editTo(path))} />}
         />
         <Route path="/edit/*" element={<EditorRoute store={store} />} />
+        <Route path="/find" element={<FindView />} />
         <Route path="/generate" element={<GenerateView store={store} />} />
       </Routes>
     </div>

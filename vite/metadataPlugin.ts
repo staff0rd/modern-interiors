@@ -10,6 +10,7 @@ import { GENERATED_DIR, writeGeneratedTree } from "./generateOutput.ts";
 const METADATA_FILE = join(process.cwd(), "metadata", "metadata.json");
 const MANIFEST_FILE = join(process.cwd(), "metadata", "manifest.json");
 const PAINT_FILE = join(process.cwd(), "metadata", "paint.json");
+const TILES_FILE = join(process.cwd(), "metadata", "tiles.json");
 const JSON_INDENT = 2;
 const HTTP_OK = 200;
 const HTTP_BAD_REQUEST = 400;
@@ -104,6 +105,17 @@ export const metadataPlugin = (): Plugin => ({
         }),
       ),
     );
+
+    server.middlewares.use("/api/tiles", (req, res) => {
+      if (req.method !== "GET") {
+        return sendJson(res, HTTP_METHOD_NOT_ALLOWED, { error: "method not allowed" });
+      }
+      return serveFile(res, TILES_FILE, () =>
+        sendJson(res, HTTP_SERVER_ERROR, {
+          error: "tiles.json not found — run `npm run scan-tiles`",
+        }),
+      );
+    });
 
     server.middlewares.use("/generated", serveGenerated);
 

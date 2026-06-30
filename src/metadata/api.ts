@@ -2,9 +2,11 @@ import {
   manifestSchema,
   metadataSchema,
   paintReferenceSchema,
+  tilesDbSchema,
   type Manifest,
   type Metadata,
   type PaintReference,
+  type TilesDb,
 } from "./schema.ts";
 
 const HTTP_NOT_FOUND = 404;
@@ -23,6 +25,14 @@ export const fetchMetadata = async (): Promise<Metadata> => {
     throw new Error(`Failed to load metadata (${response.status})`);
   }
   return metadataSchema.parse(await response.json());
+};
+
+export const fetchTiles = async (): Promise<TilesDb> => {
+  const response = await fetch("/api/tiles");
+  if (!response.ok) {
+    throw new Error(`Failed to load tiles (${response.status})`);
+  }
+  return tilesDbSchema.parse(await response.json());
 };
 
 export const saveMetadata = async (metadata: Metadata): Promise<void> => {
